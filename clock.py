@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter.ttk import *
 from time import strftime
+# moved clock logic into GUI.py cause I'm stupid and couldn't figure out how to import
 
 Window = Tk()
 Window.title('Clock') 
