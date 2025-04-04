@@ -38,3 +38,17 @@ ideal_temp_c = {
     "Swordtail":"18°C-28°C",
     "Dwarf Gourami":"24°C-27°C"
 }
+
+
+ideal_ph = {
+    "Goldfish":"7.0-7.5",
+    "Guppy":"7.0-8.0",
+    "Zebrafish":"7.0-8.0",
+    "Tetra":"6.8-7.8",
+    "Minnow":"6.0-9.5",
+    "Pea Puffer":"6.8-7.8",
+    "Barb":"6.8-7.8",
+    "Swordtail":"7.0-8.0",
+    "Dwarf Gourami":"6.8-7.8"
+}
+
