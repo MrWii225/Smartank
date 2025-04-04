@@ -21,8 +21,9 @@ for frame in (f1, f2, f3, f4):
 
 # Main Page 
 
-Label(f1, text='Temp: ').pack()
-Label(f1, text='pH').pack()
+Label(f1, text='Temp: 77').pack()
+Label(f1, text='pH: 7.0').pack()
+Label(f1, text='Time').pack()
 
 Button(f1, text='Options', command=lambda:raise_frame(f2)).pack()
 Button(f1, text='Fishionary', command=lambda:raise_frame(f3)).pack()
