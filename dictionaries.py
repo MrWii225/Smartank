@@ -52,3 +52,16 @@ ideal_ph = {
     "Dwarf Gourami":"6.8-7.8"
 }
 
+
+
+food_amount = {
+    "Goldfish":2,
+    "Guppy":2,
+    "Zebrafish":2,
+    "Tetra":2,
+    "Minnow":1,
+    "Pea Puffer":1,
+    "Barb":2,
+    "Swordtail":2,
+    "Dwarf Gourami":2
+}
