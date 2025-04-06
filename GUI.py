@@ -1,13 +1,14 @@
 from tkinter import *
 import tkinter.font as font
+from tkinter.ttk import *
 from time import strftime
-
-
-
 
 def raise_frame(frame):
     frame.tkraise()
-
+def change_style(root):
+    root.configure(background='black')
+    root.configure()
+    
 root = Tk()
 
 default_font = font.nametofont("TkDefaultFont")
@@ -50,6 +51,7 @@ Button(f3, text='Back', command=lambda:raise_frame(f1)).pack()
 
 
 Button(f4,text="Back", command=lambda:raise_frame(f2)).pack()
+Button(f4, text="Dark Mode")
 
 raise_frame(f1)
 root.mainloop()
