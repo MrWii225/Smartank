@@ -11,8 +11,8 @@ class SmartankGUI(tk.Tk):
         container.pack(fill="both", expand=True)
         
         self.frames = {}
-         
-        for PageClass in (InitialPage, FishionaryPage, GoldfishData, GuppyData, ZebrafishData, TetraData, MinnowData, PeaPufferData, BarbData, SwordtailData, DwarfGouramiData):
+         # GoldfishData, GuppyData, ZebrafishData, TetraData, MinnowData, PeaPufferData, BarbData, SwordtailData, DwarfGouramiData
+        for PageClass in (InitialPage, Fishionary):
             page_name = PageClass.__name__
             frame = PageClass(parent=container, controller=self)
             self.frames[page_name] = frame 
@@ -20,7 +20,7 @@ class SmartankGUI(tk.Tk):
         
         self.show_frame("InitialPage")
     
-    def show_frame(self, page_name):
+    def show_frame(self, page_name:str):
         frame = self.frames[page_name]
         frame.tkraise() 
 
@@ -30,10 +30,10 @@ class InitialPage(tk.Frame):
         tk.Label(self, text="Smartank").pack(pady=10)
         tk.Button(self, text="Fishionary", command=lambda: controller.show_frame("Fishionary")).pack()
 
-class FishionaryPage(tk.Frame):
+class Fishionary(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
-        tk.Label(self, text="Fishionary").pack(pady=10)
+        tk.Label(self, text="Fishionary").grid()
         tk.Button(self, text="Goldfish", command=lambda: controller.show_frame("GoldfishData")).grid(row=0, column=0)
         tk.Button(self, text="Guppy", command=lambda: controller.show_frame("GuppyData")).grid(row=1, column=0)
         tk.Button(self, text="Zebrafish", command=lambda: controller.show_frame("ZebrafishData")).grid(row=2, column=0)
