@@ -1,4 +1,7 @@
 import tkinter as tk 
+import tkinter.font as font
+from tkinter.ttk import *
+from time import strftime
 
 class SmartankGUI(tk.Tk):
     
@@ -9,6 +12,9 @@ class SmartankGUI(tk.Tk):
         
         container = tk.Frame(self)
         container.pack(fill="both", expand=True)
+
+        default_font = font.nametofont("TkDefaultFont")
+        default_font.configure(size=20)
         
         self.frames = {}
         # , GoldfishData, GuppyData, ZebrafishData, TetraData, MinnowData, PeaPufferData, BarbData, SwordtailData, DwarfGouramiData
@@ -27,8 +33,17 @@ class SmartankGUI(tk.Tk):
 class InitialPage(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
-        tk.Label(self, text="Smartank").pack(pady=10)
-        tk.Button(self, text="Fishionary", command=lambda: controller.show_frame("Fishionary")).pack()
+        tk.Label(self, text="Smartank").pack(pady=10,anchor="center",expand=True)
+        tk.Button(self, text="Fishionary", command=lambda: controller.show_frame("Fishionary")).pack(anchor="center")
+        def time(): 
+            string = strftime('%I:%M:%S %p') 
+            lbl.config(text = string) 
+            lbl.after(1000, time) 
+
+        lbl = tk.Label(self, font = ('Times New Roman', 40)) 
+
+        lbl.pack() 
+        time() 
 
 class Fishionary(tk.Frame):
     def __init__(self, parent, controller):
