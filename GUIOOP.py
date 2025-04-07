@@ -11,7 +11,7 @@ class SmartankGUI(tk.Tk):
         container.pack(fill="both", expand=True)
         
         self.frames = {}
-         # GoldfishData, GuppyData, ZebrafishData, TetraData, MinnowData, PeaPufferData, BarbData, SwordtailData, DwarfGouramiData
+        # , GoldfishData, GuppyData, ZebrafishData, TetraData, MinnowData, PeaPufferData, BarbData, SwordtailData, DwarfGouramiData
         for PageClass in (InitialPage, Fishionary):
             page_name = PageClass.__name__
             frame = PageClass(parent=container, controller=self)
@@ -33,7 +33,7 @@ class InitialPage(tk.Frame):
 class Fishionary(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
-        tk.Label(self, text="Fishionary").grid()
+        tk.Label(self, text="Fishionary").grid(pady=10)
         tk.Button(self, text="Goldfish", command=lambda: controller.show_frame("GoldfishData")).grid(row=0, column=0)
         tk.Button(self, text="Guppy", command=lambda: controller.show_frame("GuppyData")).grid(row=1, column=0)
         tk.Button(self, text="Zebrafish", command=lambda: controller.show_frame("ZebrafishData")).grid(row=2, column=0)
