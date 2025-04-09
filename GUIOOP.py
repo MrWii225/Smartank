@@ -18,7 +18,7 @@ class SmartankGUI(tk.Tk):
         
         self.frames = {}
         # , GoldfishData, GuppyData, ZebrafishData, TetraData, MinnowData, PeaPufferData, BarbData, SwordtailData, DwarfGouramiData
-        for PageClass in (InitialPage, Fishionary):
+        for PageClass in (InitialPage, Fishionary, Options):
             page_name = PageClass.__name__
             frame = PageClass(parent=container, controller=self)
             self.frames[page_name] = frame 
@@ -33,7 +33,8 @@ class SmartankGUI(tk.Tk):
 class InitialPage(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
-        tk.Label(self, text="Smartank").pack(pady=10,anchor="center",expand=True)
+        tk.Label(self, text="Smartank", font = ("Arial",40)).pack(pady=10,anchor="center",expand=True)
+        tk.Button(self, text="Options", command=lambda: controller.show_frame("Options")).pack()
         tk.Button(self, text="Fishionary", command=lambda: controller.show_frame("Fishionary")).pack(anchor="center")
         def time(): 
             string = strftime('%I:%M:%S %p') 
@@ -60,7 +61,9 @@ class Fishionary(tk.Frame):
         tk.Button(self, text="Dwarf Gourami", command=lambda: controller.show_frame("DwarfGouramiData")).grid(row=2, column=2)
         tk.Button(self, text="Go Back", command=lambda: controller.show_frame("InitialPage")).grid(row=3, column= 1)
 
-
+class Options(tk.Frame):
+    def __init__(self,parent,controller):
+        tk.Label(self, text="Options").pack()
 
 
 smartankgui = SmartankGUI()
