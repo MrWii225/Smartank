@@ -1,5 +1,6 @@
 import tkinter as tk 
 from dictionaries import *
+from time import strftime
 
 class SmartankGUI(tk.Tk):
     
@@ -13,7 +14,7 @@ class SmartankGUI(tk.Tk):
         
         self.frames = {}
         
-        for PageClass in (InitialPage, Fishionary, Goldfish, Guppy, Zebrafish, Tetra, Minnow, PeaPuffer, Barb, Swordtail, DwarfGourami):
+        for PageClass in (InitialPage, Options, Fishionary, Goldfish, Guppy, Zebrafish, Tetra, Minnow, PeaPuffer, Barb, Swordtail, DwarfGourami):
             page_name = PageClass.__name__
             frame = PageClass(parent=container, controller=self)
             self.frames[page_name] = frame 
@@ -28,8 +29,29 @@ class SmartankGUI(tk.Tk):
 class InitialPage(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
-        tk.Label(self, text="Smartank").pack(padx=10, pady=10)
-        tk.Button(self, text="Fishionary", command=lambda: controller.show_frame("Fishionary")).pack()
+        
+        tk.Label(self, text="Smartank", font = ('Times New Roman', 40)).pack(padx=10, pady=10)
+        tk.Label(self, text="- pH", font = ('Times New Roman', 30)).pack(padx=10, pady=10)
+        tk.Label(self, text="- F", font = ('Times New Roman', 30)).pack(padx=10, pady=10)
+        tk.Button(self, text="Fishionary", width=16, height=2, command=lambda: controller.show_frame("Fishionary")).pack()
+        tk.Button(self,text="Options", width=16, height=2, command=lambda:controller.show_frame("Options")).pack()
+
+        def time(): 
+            string = strftime('%I:%M:%S %p') 
+            lbl.config(text = string) 
+            lbl.after(1000, time) 
+        lbl= tk.Label(self, font = ('Times New Roman', 40)) 
+
+
+        lbl.pack() 
+        time() 
+
+class Options(tk.Frame):
+    def __init__(self, parent, controller):
+        super().__init__(parent)
+        tk.Button(self,text="Go Back", width=16, height=2,command=lambda: controller.show_frame("InitialPage")).pack()
+        tk.Button(self,text="Display", width=16, height=2,command=lambda: controller.show_frame("InitialPage")).pack()
+        tk.Button(self,text="Autofeeder", width=16, height=2,command=lambda: controller.show_frame("InitialPage")).pack()
 
 class Fishionary(tk.Frame):
     def __init__(self, parent, controller):
