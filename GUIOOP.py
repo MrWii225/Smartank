@@ -28,8 +28,14 @@ class SmartankGUI(tk.Tk):
 class InitialPage(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
-        tk.Label(self, text="Smartank").pack(padx=10, pady=10)
-        tk.Button(self, text="Fishionary", command=lambda: controller.show_frame("Fishionary")).pack()
+        self.columnconfigure(0, weight=1)
+        tk.Label(self, text="Smartank", font=("Arial", 24, "bold")).grid(row=0, column=0, columnspan=5, pady=20, sticky="n") 
+        tk.Button(self, text="Fishionary",
+                  font=("Arial", 16),
+                  width=16, height=2,
+                  bg="#FFE0E0",
+                  command=lambda: controller.show_frame("Fishionary")
+                  ).grid(row=1, column=0, columnspan=5, pady=20, sticky="n")
 
 class Fishionary(tk.Frame):
     def __init__(self, parent, controller):
