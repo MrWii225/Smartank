@@ -1,5 +1,7 @@
 import tkinter as tk 
+from tkinter import ttk
 from dictionaries import *
+from time import strftime
 
 class SmartankGUI(tk.Tk):
     
@@ -9,11 +11,11 @@ class SmartankGUI(tk.Tk):
         self.geometry("1000x600")
         
         container = tk.Frame(self)
-        container.pack(fill="both", expand=True)
+        container.pack(fill="none", expand=True)
         
         self.frames = {}
         
-        for PageClass in (InitialPage, Fishionary, Goldfish, Guppy, Zebrafish, Tetra, Minnow, PeaPuffer, Barb, Swordtail, DwarfGourami):
+        for PageClass in (InitialPage, Options, Display, Fishionary, Goldfish, Guppy, Zebrafish, Tetra, Minnow, PeaPuffer, Barb, Swordtail, DwarfGourami):
             page_name = PageClass.__name__
             frame = PageClass(parent=container, controller=self)
             self.frames[page_name] = frame 
@@ -28,14 +30,34 @@ class SmartankGUI(tk.Tk):
 class InitialPage(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
-        self.columnconfigure(0, weight=1)
-        tk.Label(self, text="Smartank", font=("Arial", 24, "bold")).grid(row=0, column=0, columnspan=5, pady=20, sticky="n") 
-        tk.Button(self, text="Fishionary",
-                  font=("Arial", 16),
-                  width=16, height=2,
-                  bg="#FFE0E0",
-                  command=lambda: controller.show_frame("Fishionary")
-                  ).grid(row=1, column=0, columnspan=5, pady=20, sticky="n")
+        
+        tk.Label(self, text="Smartank", font = ('Georgia', 50)).pack(padx=10, pady=15)
+        tk.Label(self, text="- pH", font = ('Arial', 30)).pack(padx=10, pady=10)
+        tk.Label(self, text="- F", font = ('Arial', 30)).pack(padx=10, pady=10)
+        tk.Button(self, text="Fishionary",font=('Arial',16),width=30, height=3, command=lambda: controller.show_frame("Fishionary")).pack(pady=3)
+        tk.Button(self,text="Options", font=('Arial',16),width=30, height=3, command=lambda:controller.show_frame("Options")).pack(pady=3)
+
+        def time(): 
+            string = strftime('%I:%M:%S %p') 
+            lbl.config(text = string) 
+            lbl.after(1000, time) 
+        lbl= tk.Label(self, font = ('Arial', 40)) 
+
+
+        lbl.pack(pady=5) 
+        time() 
+
+class Options(tk.Frame):
+    def __init__(self, parent, controller):
+        super().__init__(parent)
+        tk.Button(self,text="Go Back", font=(20),width=10, height=1,command=lambda: controller.show_frame("InitialPage")).pack(pady=3)
+        tk.Button(self,text="Display", font=('Arial',16),width=30, height=3,command=lambda: controller.show_frame("Display")).pack(pady=3)
+        tk.Button(self,text="Autofeeder", font=('Arial',16),width=30, height=3,command=lambda: controller.show_frame("InitialPage")).pack(pady=3)
+
+class Display(tk.Frame):
+    def __init__(self, parent, controller):
+        super().__init__(parent)
+        tk.Button(self,text="Go Back", font=(20),width=10, height=1,command=lambda: controller.show_frame("Options")).pack(pady=6)
 
 class Fishionary(tk.Frame):
     def __init__(self, parent, controller):
