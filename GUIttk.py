@@ -119,23 +119,32 @@ class InfoPage(ttk.Frame):
         ttk.Button(self, text="Go Back", command=lambda: controller.show_frame("Fishionary")).grid(row=3, column=0, columnspan=2, pady=10)
 
 class Goldfish(InfoPage):     
-    def __init__(self, parent, controller): super().__init__(parent, controller, "Goldfish")
+    def __init__(self, parent, controller): 
+        super().__init__(parent, controller, "Goldfish")
 class Guppy(InfoPage):        
-    def __init__(self, parent, controller): super().__init__(parent, controller, "Guppy")
+    def __init__(self, parent, controller): 
+        super().__init__(parent, controller, "Guppy")
 class Zebrafish(InfoPage):    
-    def __init__(self, parent, controller): super().__init__(parent, controller, "Zebrafish")
+    def __init__(self, parent, controller): 
+        super().__init__(parent, controller, "Zebrafish")
 class Tetra(InfoPage):        
-    def __init__(self, parent, controller): super().__init__(parent, controller, "Tetra")
+    def __init__(self, parent, controller): 
+        super().__init__(parent, controller, "Tetra")
 class Minnow(InfoPage):       
-    def __init__(self, parent, controller): super().__init__(parent, controller, "Minnow")
+    def __init__(self, parent, controller): 
+        super().__init__(parent, controller, "Minnow")
 class PeaPuffer(InfoPage):    
-    def __init__(self, parent, controller): super().__init__(parent, controller, "Pea Puffer")
+    def __init__(self, parent, controller): 
+        super().__init__(parent, controller, "Pea Puffer")
 class Barb(InfoPage):         
-    def __init__(self, parent, controller): super().__init__(parent, controller, "Barb")
+    def __init__(self, parent, controller): 
+        super().__init__(parent, controller, "Barb")
 class Swordtail(InfoPage):    
-    def __init__(self, parent, controller): super().__init__(parent, controller, "Swordtail")
+    def __init__(self, parent, controller): 
+        super().__init__(parent, controller, "Swordtail")
 class DwarfGourami(InfoPage): 
-    def __init__(self, parent, controller): super().__init__(parent, controller, "Dwarf Gourami")
+    def __init__(self, parent, controller): 
+        super().__init__(parent, controller, "Dwarf Gourami")
 
 # Run the app
 if __name__ == "__main__":
