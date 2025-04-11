@@ -4,18 +4,29 @@ from ttkthemes import ThemedTk
 from dictionaries import *
 from time import strftime
 
-class SmartankGUI(tk.Tk):
+class SmartankGUI(tk.Tk): #ThemedTk
     def __init__(self):
-        super().__init__()  #'plastik', 'arc', 'breeze', 'equilux'
+        super().__init__()  #theme = 'plastik', 'arc', 'breeze', 'equilux'
         self.title("Smartank")
         self.geometry("1000x600")
 
-        style = ttk.Style()
-        style.configure("TButton", font=('Arial', 14), padding=6)
-        style.configure("TLabel", font=('Arial', 14))
+        self.style = ttk.Style(self)
+        self.style = ttk.Style()
+        self.current_theme = "light"
+        self.apply_light_theme()
 
-        container = ttk.Frame(self)
-        container.pack(fill="none", expand=True)
+        self.style.configure("TButton", font=('Arial', 14), padding=6)
+        self.style.configure("TLabel", font=('Arial', 14))
+
+        # The stuff making it centered
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
+
+        container = ttk.Frame(self, style="TCombobox")
+        container.grid(row=0, column=0, sticky="nsew")
+
+        container.rowconfigure(0, weight=1)
+        container.columnconfigure(0, weight=1)
 
         self.frames = {}
 
@@ -30,6 +41,28 @@ class SmartankGUI(tk.Tk):
     def show_frame(self, page_name):
         frame = self.frames[page_name]
         frame.tkraise()
+    
+    def apply_dark_theme(self):
+        self.style.configure("TFrame", background="#2E2E2E")
+        self.style.configure("TLabel", background="#2E2E2E", foreground="#FFFFFF")
+        self.style.configure("TButton", background="#3E3E3E", foreground="#000000")
+        self.style.map("TButton", background=[('active', '#505050')], foreground=[('active', '#FFFFFF')])
+        self.style.configure("TCombobox", fieldbackground="#3E3E3E", background="#2E2E2E", foreground="#FFFFFF")
+        self.current_theme = "dark"
+
+    def apply_light_theme(self):
+        self.style.configure("TFrame", background="#F0F0F0")
+        self.style.configure("TLabel", background="#F0F0F0", foreground="#000000")
+        self.style.configure("TButton", background="#E0E0E0", foreground="#000000")
+        self.style.map("TButton", background=[('active', '#D0D0D0')], foreground=[('active', '#000000')])
+        self.style.configure("TCombobox", fieldbackground="#FFFFFF", background="#FFFFFF", foreground="#000000")
+        self.current_theme = "light"
+    
+    def toggle_theme(self):
+        if self.current_theme == "light":
+            self.apply_dark_theme()
+        else:
+            self.apply_light_theme()
 
 class InitialPage(ttk.Frame):
     def __init__(self, parent, controller):
@@ -65,6 +98,7 @@ class Display(ttk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         ttk.Button(self, text="Go Back", width=10, command=lambda: controller.show_frame("Options")).pack(pady=6)
+        ttk.Button(self, text="Switch Theme", command= lambda: controller.toggle_theme()).pack(pady=6)
 
 class Fishionary(ttk.Frame):
     def __init__(self, parent, controller):
@@ -146,7 +180,8 @@ class DwarfGourami(InfoPage):
     def __init__(self, parent, controller): 
         super().__init__(parent, controller, "Dwarf Gourami")
 
-# Run the app
+
+
 if __name__ == "__main__":
     app = SmartankGUI()
     app.mainloop()
