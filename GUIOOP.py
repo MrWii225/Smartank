@@ -1,5 +1,5 @@
 import tkinter as tk 
-from tkinter import ttk
+from ttkthemes import *
 from dictionaries import *
 from time import strftime
 
@@ -34,6 +34,7 @@ class InitialPage(tk.Frame):
         tk.Label(self, text="Smartank", font = ('Georgia', 50)).pack(padx=10, pady=15)
         tk.Label(self, text="- pH", font = ('Arial', 30)).pack(padx=10, pady=10)
         tk.Label(self, text="- F", font = ('Arial', 30)).pack(padx=10, pady=10)
+        tk.Label(self, text="Autofeeder timer: ", font = ('Arial', 30)).pack(padx=10, pady=10)
         tk.Button(self, text="Fishionary",font=('Arial',16),width=30, height=3, command=lambda: controller.show_frame("Fishionary")).pack(pady=3)
         tk.Button(self,text="Options", font=('Arial',16),width=30, height=3, command=lambda:controller.show_frame("Options")).pack(pady=3)
 
