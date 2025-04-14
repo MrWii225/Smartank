@@ -1,11 +1,14 @@
 from tkinter import *
 import tkinter.font as font
-
-
+from tkinter.ttk import *
+from time import strftime
 
 def raise_frame(frame):
     frame.tkraise()
-
+def change_style(root):
+    root.configure(background='black')
+    root.configure()
+    
 root = Tk()
 
 default_font = font.nametofont("TkDefaultFont")
@@ -21,14 +24,21 @@ for frame in (f1, f2, f3, f4):
 
 # Main Page 
 
-Label(f1, text='Temp: ').pack()
-Label(f1, text='pH').pack()
+Label(f1, text='Temp: 77').pack()
+Label(f1, text='pH: 7.0').pack()
 
 Button(f1, text='Options', command=lambda:raise_frame(f2)).pack()
 Button(f1, text='Fishionary', command=lambda:raise_frame(f3)).pack()
 
-Label(f1,text= "TIME HERE").pack()
+def time(): 
+    string = strftime('%I:%M:%S %p') 
+    lbl.config(text = string) 
+    lbl.after(1000, time) 
 
+lbl=Label(f1, font = ('Times New Roman', 40)) 
+
+lbl.pack() 
+time() 
 ################################
 
 Label(f2, text='Options').pack()
@@ -41,6 +51,7 @@ Button(f3, text='Back', command=lambda:raise_frame(f1)).pack()
 
 
 Button(f4,text="Back", command=lambda:raise_frame(f2)).pack()
+Button(f4, text="Dark Mode")
 
 raise_frame(f1)
 root.mainloop()
