@@ -7,9 +7,10 @@ from PIL import Image, ImageTk
 
 AVAILABLE_FONTS = ["Arial", "Georgia", "Times", "Courier", "Comic Sans MS"]
 
-# Define small and large font sizes
+
 SMALL_FONT_SIZE = 14
-LARGE_FONT_SIZE = 24
+MED_FONT_SIZE = 24
+LARGE_FONT_SIZE = 40
 
 class SmartankGUI(tk.Tk):
     def __init__(self):
@@ -18,7 +19,7 @@ class SmartankGUI(tk.Tk):
         self.geometry("1000x600")
 
         self.style = ttk.Style(self)
-        self._current_theme = "light"  # Changed to use internal var for property
+        self._current_theme = "light"
         self.current_font = "Arial"
         self.current_font_size = SMALL_FONT_SIZE  # Default to small
         self.apply_light_theme()
@@ -92,12 +93,14 @@ class SmartankGUI(tk.Tk):
     def set_font_size(self, font_size):
         if font_size == "Small":
             self.current_font_size = SMALL_FONT_SIZE
-        else:
+        elif font_size == "Large":
             self.current_font_size = LARGE_FONT_SIZE
+        else:
+            self.current_font_size = MED_FONT_SIZE
 
         self.style.configure("TButton", font=(self.current_font, self.current_font_size))
         self.style.configure("TLabel", font=(self.current_font, self.current_font_size))
-        # Loop through all widgets in all frames and update their font size
+
         for frame in self.frames.values():
             for widget in frame.winfo_children():
                 if isinstance(widget, (ttk.Label, ttk.Button, ttk.Entry, ttk.Combobox)):
@@ -114,11 +117,11 @@ class InitialPage(ttk.Frame):
         label.image = photo
         label.pack(padx=10, pady=15)
 
-        # Title text with larger font size
+
         ttk.Label(self, text="- pH", font=('Arial', 30)).pack(padx=10, pady=10)
         ttk.Label(self, text="- F", font=('Arial', 30)).pack(padx=10, pady=10)
 
-        # Autofeeder label with larger font size
+
         ttk.Label(self, text="Autofeeder timer: ", font=('Arial', 30)).pack(padx=10, pady=10)
 
         ttk.Button(self, text="Fishionary", width=30, command=lambda: controller.show_frame("Fishionary")).pack(pady=5)
@@ -154,7 +157,7 @@ class Display(ttk.Frame):
         font_choice.bind("<<ComboboxSelected>>", lambda e: controller.set_font(font_choice.get()))
 
         ttk.Label(self, text="Change Font Size:").pack(pady=6)
-        font_size_choice = ttk.Combobox(self, values=["Small", "Large"], state="readonly")
+        font_size_choice = ttk.Combobox(self, values=["Small", "Medium", "Large"], state="readonly")
         font_size_choice.set("Small")
         font_size_choice.pack(pady=6)
         font_size_choice.bind("<<ComboboxSelected>>", lambda e: controller.set_font_size(font_size_choice.get()))
