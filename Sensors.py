@@ -16,6 +16,9 @@ mcp = MCP3008(spi, cs)
 # Use CH0 for the pH sensor
 ph_channel = AnalogIn(mcp, P0)
 
+def get_phvoltage():
+    return ph_channel.voltage 
+
 def voltage_to_ph(voltage):
     #Calibrate with calibration fluids
     ph = (7.78 * voltage - 8.54)
@@ -28,6 +31,11 @@ while True:
     print(f"Raw ADC Value: {raw_value}, Voltage: {voltage:.3f} V")
     time.sleep(1)
 
+def get_tempvoltage():
+    """gets the temperature voltage"""
 
+
+def voltage_to_f(voltage):
+    """gets the fahrenheit from voltage"""
 
 
