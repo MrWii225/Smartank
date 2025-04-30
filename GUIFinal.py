@@ -3,11 +3,31 @@ from tkinter import ttk
 from dictionaries import *
 from time import strftime
 from PIL import Image, ImageTk
+import json
+import os
 
 AVAILABLE_FONTS = ["Arial", "Georgia", "Times", "Courier", "Comic Sans MS"]
 SMALL_FONT_SIZE = 14
 MED_FONT_SIZE = 24
 LARGE_FONT_SIZE = 40
+CONFIG_FILE = "settings.json"
+
+def load_settings():
+    if os.path.exists(CONFIG_FILE):
+        with open(CONFIG_FILE, 'r') as file:
+            return json.load(file)
+    return {
+        "theme": "light",
+        "font": "Arial",
+        "font_size": SMALL_FONT_SIZE,
+        "feeding_frequency": 2
+    }
+
+def save_settings(settings):
+    with open(CONFIG_FILE, 'w') as file:
+        json.dump(settings, file)
+
+
 
 class SmartankGUI(tk.Tk):
     def __init__(self):
@@ -15,10 +35,12 @@ class SmartankGUI(tk.Tk):
         self.title("Smartank")
         self.geometry("1000x600")
         self.style = ttk.Style(self)
-        self._current_theme = "light"
-        self.current_font = "Arial"
-        self.current_font_size = SMALL_FONT_SIZE
-        self.apply_light_theme()
+
+        self.settings = load_settings()
+        self._current_theme = self.settings["theme"]
+        self.current_font = self.settings["font"]
+        self.current_font_size = self.settings["font_size"]
+        self.apply_theme(self._current_theme)
 
         self.style.configure("TButton", font=(self.current_font, self.current_font_size), padding=6)
         self.style.configure("TLabel", font=(self.current_font, self.current_font_size))
@@ -40,17 +62,15 @@ class SmartankGUI(tk.Tk):
 
         self.show_frame("InitialPage")
 
-    @property
-    def current_theme(self):
-        return self._current_theme
-
-    @current_theme.setter
-    def current_theme(self, value):
-        self._current_theme = value
+    def apply_theme(self, theme):
+        if theme == "dark":
+            self.apply_dark_theme()
+        else:
+            self.apply_light_theme()
 
     def show_frame(self, page_name):
         frame = self.frames[page_name]
-        frame.tkraise()
+        frame.tkraise() 
 
     def apply_dark_theme(self):
         self.style.configure("TFrame", background="#2E2E2E")
@@ -58,7 +78,6 @@ class SmartankGUI(tk.Tk):
         self.style.configure("TButton", background="#3E3E3E", foreground="#000000")
         self.style.map("TButton", background=[('active', '#505050')])
         self.style.configure("TCombobox", fieldbackground="#3E3E3E", background="#2E2E2E", foreground="#000000")
-        self.current_theme = "dark"
 
     def apply_light_theme(self):
         self.style.configure("TFrame", background="#F9F9F9")
@@ -66,24 +85,23 @@ class SmartankGUI(tk.Tk):
         self.style.configure("TButton", background="#E0E0E0", foreground="#000000")
         self.style.map("TButton", background=[('active', '#D0D0D0')])
         self.style.configure("TCombobox", fieldbackground="#FFFFFF", background="#FFFFFF", foreground="#000000")
-        self.current_theme = "light"
 
     def toggle_theme(self):
-        if self.current_theme == "light":
-            self.apply_dark_theme()
-        else:
-            self.apply_light_theme()
+        self._current_theme = "dark" if self._current_theme == "light" else "light"
+        self.settings["theme"] = self._current_theme
+        save_settings(self.settings)
+        self.apply_theme(self._current_theme)
 
     def set_font(self, font_name):
         self.current_font = font_name
-        self.style.configure("TButton", font=(self.current_font, self.current_font_size))
-        self.style.configure("TLabel", font=(self.current_font, self.current_font_size))
+        self.settings["font"] = font_name
 
-        for frame in self.frames.values():
-            for widget in frame.winfo_children():
-                if isinstance(widget, (ttk.Label, ttk.Button, ttk.Entry, ttk.Combobox)):
-                    widget.configure(font=(self.current_font, self.current_font_size))
-        self.frames["InitialPage"].update_clock_font(self.current_font, self.current_font_size)
+        self.style.configure("TLabel", font=(self.current_font, self.current_font_size))
+        self.style.configure("TButton", font=(self.current_font, self.current_font_size))
+        self.style.configure("TEntry", font=(self.current_font, self.current_font_size))
+        self.style.configure("TCombobox", font=(self.current_font, self.current_font_size))
+
+        save_settings(self.settings)
 
     def set_font_size(self, font_size):
         if font_size == "Small":
@@ -92,15 +110,18 @@ class SmartankGUI(tk.Tk):
             self.current_font_size = LARGE_FONT_SIZE
         else:
             self.current_font_size = MED_FONT_SIZE
+        self.settings["font_size"] = self.current_font_size
 
         self.style.configure("TButton", font=(self.current_font, self.current_font_size))
         self.style.configure("TLabel", font=(self.current_font, self.current_font_size))
+        self.style.configure("TEntry", font=(self.current_font, self.current_font_size))
+        self.style.configure("TCombobox", font=(self.current_font, self.current_font_size))
 
-        for frame in self.frames.values():
-            for widget in frame.winfo_children():
-                if isinstance(widget, (ttk.Label, ttk.Button, ttk.Entry, ttk.Combobox)):
-                    widget.configure(font=(self.current_font, self.current_font_size))
         self.frames["InitialPage"].update_clock_font(self.current_font, self.current_font_size)
+
+        save_settings(self.settings)
+
+
 
 class InitialPage(ttk.Frame):
     def __init__(self, parent, controller):
@@ -112,10 +133,10 @@ class InitialPage(ttk.Frame):
         label.image = photo
         label.pack(padx=10, pady=15)
 
-        ttk.Label(self, text="- pH", font=('Arial', 30)).pack(padx=10, pady=10)
-        ttk.Label(self, text="- F", font=('Arial', 30)).pack(padx=10, pady=10)
+        ttk.Label(self, text="- pH").pack(padx=10, pady=10)
+        ttk.Label(self, text="- F").pack(padx=10, pady=10)
 
-        ttk.Label(self, text="Autofeeder timer: ", font=('Arial', 30)).pack(padx=10, pady=10)
+        ttk.Label(self, text="Autofeeder timer: ").pack(padx=10, pady=10)
 
         ttk.Button(self, text="Fishionary", width=30, command=lambda: controller.show_frame("Fishionary")).pack(pady=5)
         ttk.Button(self, text="Options", width=30, command=lambda: controller.show_frame("Options")).pack(pady=5)
@@ -125,9 +146,14 @@ class InitialPage(ttk.Frame):
             self.lbl.config(text=string)
             self.lbl.after(1000, time)
 
-        self.lbl = ttk.Label(self,font=("Times",40))
+        self.lbl = ttk.Label(self)
         self.lbl.pack(pady=5)
         time()
+
+    def update_clock_font(self, font_name, font_size):
+        self.lbl.config(font=(font_name, font_size))
+
+
 
 class Options(ttk.Frame):
     def __init__(self, parent, controller):
@@ -135,7 +161,9 @@ class Options(ttk.Frame):
         ttk.Button(self, text="Go Back", width=10, command=lambda: controller.show_frame("InitialPage")).pack(pady=8)
         ttk.Button(self, text="Display", width=30, command=lambda: controller.show_frame("Display")).pack(pady=8)
         ttk.Button(self, text="Autofeeder", width=30, command=lambda: controller.show_frame("Autofeeder")).pack(pady=8)
-        ttk.Button(self, text="Fish Parameters", width=30, command=lambda:controller.show_frame("FishParams")).pack(pady=8)
+        ttk.Button(self, text="Fish Parameters", width=30, command=lambda: controller.show_frame("FishParams")).pack(pady=8)
+
+
 
 class Autofeeder(ttk.Frame):
     def __init__(self, parent, controller):
@@ -144,18 +172,20 @@ class Autofeeder(ttk.Frame):
 
         ttk.Label(self, text="Set Feedings per Day:").pack(pady=10)
 
-        self.feed_var = tk.IntVar(value=2)
-        feed_options = [1, 2, 3]
+        self.feed_var = tk.StringVar(value=self.controller.settings["feeding_frequency"])
+        feed_options = ["1", "2", "3"]
         feed_menu = ttk.Combobox(self, textvariable=self.feed_var, values=feed_options, state="readonly")
         feed_menu.pack(pady=5)
 
-        ttk.Button(self, text="Feed Now", command=self.feed_now).pack(pady=10)
+        ttk.Button(self, text="Start Feeding", command=self.feed_now).pack(pady=10)
         ttk.Button(self, text="Go Back", command=lambda: controller.show_frame("Options")).pack(pady=10)
-    def autofeeder(self):
-        pass
+
     def feed_now(self):
-        ##### Placeholder #####
         print("Autofeeder runs.")
+        self.controller.settings["feeding_frequency"] = int(self.feed_var.get())
+        save_settings(self.controller.settings)
+
+
 
 class Display(ttk.Frame):
     def __init__(self, parent, controller):
@@ -172,15 +202,20 @@ class Display(ttk.Frame):
 
         ttk.Label(self, text="Change Font Size:").pack(pady=6)
         font_size_choice = ttk.Combobox(self, values=["Small", "Medium", "Large"], state="readonly")
-        font_size_choice.set("Small")
+        font_size_choice.set("Small" if controller.current_font_size == SMALL_FONT_SIZE else "Large" if controller.current_font_size == LARGE_FONT_SIZE else "Medium")
         font_size_choice.pack(pady=6)
         font_size_choice.bind("<<ComboboxSelected>>", lambda e: controller.set_font_size(font_size_choice.get()))
+
+
 
 class FishParams(ttk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
-        ttk.Label(self, text="Parameters").pack()
-        ttk.Button(self, text="")
+        self.controller = controller
+        ttk.Label(self, text="Fish Parameters Page (under construction)").pack(pady=20)
+        ttk.Button(self, text="Go Back", command=lambda: controller.show_frame("Options")).pack(pady=10)
+
+
 
 class Fishionary(ttk.Frame):
     def __init__(self, parent, controller):
@@ -210,6 +245,8 @@ class Fishionary(ttk.Frame):
 
         ttk.Button(self, text="Go Back", command=lambda: controller.show_frame("InitialPage")).grid(row=5, column=2, pady=20)
 
+
+
 class InfoPage(ttk.Frame):
     def __init__(self, parent, controller, fish_name):
         super().__init__(parent)
@@ -226,6 +263,8 @@ class InfoPage(ttk.Frame):
 
         ttk.Label(self, text=data, wraplength=800, justify="center").grid(row=2, column=0, columnspan=2, padx=20, pady=20)
         ttk.Button(self, text="Go Back", command=lambda: controller.show_frame("Fishionary")).grid(row=3, column=0, columnspan=2, pady=10)
+
+
 
 class Goldfish(InfoPage):     
     def __init__(self, parent, controller): 
@@ -256,6 +295,7 @@ class DwarfGourami(InfoPage):
         super().__init__(parent, controller, "Dwarf Gourami")
 
 
+
 if __name__ == "__main__":
     app = SmartankGUI()
-    app.mainloop() 
+    app.mainloop()
