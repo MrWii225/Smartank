@@ -11,6 +11,8 @@ SMALL_FONT_SIZE = 14
 MED_FONT_SIZE = 24
 LARGE_FONT_SIZE = 40
 CONFIG_FILE = "settings.json"
+NUMBER = ""
+PROVIDER = ""
 
 def load_settings():
     if os.path.exists(CONFIG_FILE):
@@ -20,7 +22,9 @@ def load_settings():
         "theme": "light",
         "font": "Arial",
         "font_size": SMALL_FONT_SIZE,
-        "feeding_frequency": 2
+        "feeding_frequency": 2,
+        "phone_num": "",
+        "provider": ""
     }
 
 def save_settings(settings):
@@ -53,14 +57,20 @@ class SmartankGUI(tk.Tk):
         container.rowconfigure(0, weight=1)
         container.columnconfigure(0, weight=1)
 
+        self.NUMBER = self.settings.get("phone_number", "")
+        self.PROVIDER = self.settings.get("provider", "")
+
         self.frames = {}
-        for PageClass in (InitialPage, Options, Display, Autofeeder, FishParams, Fishionary, Goldfish, Guppy, Zebrafish, Tetra, Minnow, PeaPuffer, Barb, Swordtail, DwarfGourami):
+        for PageClass in (WelcomePage, InitialPage, Options, Display, Autofeeder, FishParams, Fishionary, Goldfish, Guppy, Zebrafish, Tetra, Minnow, PeaPuffer, Barb, Swordtail, DwarfGourami):
             page_name = PageClass.__name__
             frame = PageClass(parent=container, controller=self)
             self.frames[page_name] = frame
             frame.grid(row=0, column=0, sticky="nsew")
 
-        self.show_frame("InitialPage")
+        if not self.NUMBER or not self.PROVIDER:
+            self.show_frame("WelcomePage")
+        else:
+            self.show_frame("InitialPage")
 
     def apply_theme(self, theme):
         if theme == "dark":
@@ -120,6 +130,47 @@ class SmartankGUI(tk.Tk):
         self.frames["InitialPage"].update_clock_font(self.current_font, self.current_font_size)
 
         save_settings(self.settings)
+
+
+
+class WelcomePage(ttk.Frame):
+    def __init__(self, parent, controller):
+        super().__init__(parent)
+        self.controller = controller
+
+        ttk.Label(self, text= "WELCOME TO SMARTANK", font=("Times", 40)).pack(pady=10)
+        ttk.Label(self, text="Enter Your Phone Number").pack(pady=10)
+        self.phone_entry = ttk.Entry(self)
+        self.phone_entry.pack(pady=5)
+
+        ttk.Label(self, text="Choose Your Provider").pack(pady=10)
+        self.provider_var = tk.StringVar()
+        provider_options = ["AT&T", "Verizon", "T-Mobile", "Sprint"]
+        provider_menu = ttk.Combobox(self, textvariable=self.provider_var, values=provider_options, state="readonly")
+        provider_menu.pack(pady=5)
+
+        ttk.Button(self, text="Save and Continue", command=self.save_info).pack(pady=20)
+
+    def save_info(self):
+        phone = self.phone_entry.get().strip()
+        if self.provider_var.get().strip() == "AT&T":
+            provider = "txt.att.net"
+        elif self.provider_var.get().strip() == "Verizon":
+            provider = "vtext.com"
+        elif self.provider_var.get().strip() == "T-Mobile":
+            provider = "tmomail.net"
+        elif self.provider_var.get().strip() == "Sprint":
+            provider = "messaging.sprintpcs.com"
+
+        if phone and provider:
+            self.controller.settings["phone_number"] = phone
+            self.controller.settings["provider"] = provider
+            save_settings(self.controller.settings)
+            self.controller.NUMBER = phone
+            self.controller.PROVIDER = provider
+            self.controller.show_frame("InitialPage")
+        else:
+            tk.messagebox.showerror("Error", "Please fill in all fields.")
 
 
 
