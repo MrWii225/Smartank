@@ -35,6 +35,11 @@ while True:
     print(f"Raw ADC Value: {raw_value}, Voltage: {voltage:.3f} V")
     time.sleep(1)
 
+def get_tempvoltage():
+    """gets the temperature voltage"""
 
+
+def voltage_to_f(voltage):
+    """gets the fahrenheit from voltage"""
 
 
