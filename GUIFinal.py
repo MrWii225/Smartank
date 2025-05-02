@@ -5,6 +5,7 @@ from time import strftime
 from PIL import Image, ImageTk
 import json
 import os
+from Sensors import voltage_to_ph, get_phvoltage, gettemp_voltage, voltage_to_f
 
 AVAILABLE_FONTS = ["Arial", "Georgia", "Times", "Courier", "Comic Sans MS"]
 SMALL_FONT_SIZE = 14
@@ -133,7 +134,10 @@ class InitialPage(ttk.Frame):
         label.image = photo
         label.pack(padx=10, pady=15)
 
-        ttk.Label(self, text="- pH").pack(padx=10, pady=10)
+        pageph = voltage_to_ph(get_phvoltage())
+
+
+        ttk.Label(self, text=f"-{pageph} pH").pack(padx=10, pady=10)
         ttk.Label(self, text="- F").pack(padx=10, pady=10)
 
         ttk.Label(self, text="Autofeeder timer: ").pack(padx=10, pady=10)
