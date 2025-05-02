@@ -27,19 +27,20 @@ def voltage_to_ph(voltage):
     ph = (7.78 * voltage - 8.54)
     return round(ph, 2)
 
-while True:
-    voltage = ph_channel.voltage
-    raw_value = ph_channel.value 
-    print(f"Temperature {temperature_f:.2f}")
-    print(voltage_to_ph(voltage))
-    print(f"Raw ADC Value: {raw_value}, Voltage: {voltage:.3f} V")
-    time.sleep(1)
+def get_phvoltage():
+    return ph_channel.voltage 
 
-def get_tempvoltage():
-    """gets the temperature voltage"""
+def get_temp():
+    return temperature_f
 
+if __name__ == "__main__":
+    while True:
+        voltage = ph_channel.voltage
+        raw_value = ph_channel.value 
+        print(f"Temperature {temperature_f:.2f}")
+        print(voltage_to_ph(voltage))
+        print(f"Raw ADC Value: {raw_value}, Voltage: {voltage:.3f} V")
+        time.sleep(1)
 
-def voltage_to_f(voltage):
-    """gets the fahrenheit from voltage"""
 
 
