@@ -7,10 +7,12 @@ with open('settings.json', 'r') as settings:
     data=json.load(settings)
     num = data.get("phone_number")
     provider = data.get("provider")
+    message = data.get("message")
 
 # need a way to set message based on what the notification should be. Probably should do functions on GUI
 # def set_message():
 #     return MESSAGE
+
 msg = EmailMessage()
 msg.set_content(f"{MESSAGE}")
 msg["Subject"] = "SMARTANK"
