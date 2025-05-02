@@ -15,6 +15,9 @@ CONFIG_FILE = "settings.json"
 NUMBER = ""
 PROVIDER = ""
 
+pageph = voltage_to_ph(get_phvoltage())
+pagetemp_f = get_temp()
+
 def load_settings():
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, 'r') as file:
@@ -185,8 +188,6 @@ class InitialPage(ttk.Frame):
         label.image = photo
         label.pack(padx=10, pady=15)
 
-        pageph = voltage_to_ph(get_phvoltage())
-        pagetemp_f = get_temp()
 
         ttk.Label(self, text=f"-{pageph} pH").pack(padx=10, pady=10)
         ttk.Label(self, text=f"-{pagetemp_f}°F").pack(padx=10, pady=10)
