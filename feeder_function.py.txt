@@ -1,0 +1,28 @@
+import RPi.GPIO as GPIO
+from time import sleep
+
+# GPIO Pins
+FRONT = 18
+BACK= 19
+
+# GPIO Setup
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(BACK, GPIO.OUT)
+GPIO.setup(FRONT, GPIO.OUT)
+
+#transistors act like switches, input to the 
+GPIO.output(BACK, GPIO.HIGH)
+GPIO.output(FRONT, GPIO.HIGH)
+
+def feed():
+	GPIO.output(FRONT, GPIO.LOW)
+	print("forward")
+	sleep(2)
+	GPIO.output(FRONT, GPIO.HIGH)
+	sleep(0.5)
+	GPIO.output(BACK, GPIO.LOW)
+	print("back")
+	sleep(2)
+	GPIO.output(BACK, GPIO.HIGH)
+	
+
