@@ -5,6 +5,9 @@ from time import strftime
 from PIL import Image, ImageTk
 import json
 import os
+import time
+import schedule
+from datetime import datetime
 
 AVAILABLE_FONTS = ["Arial", "Georgia", "Times", "Courier", "Comic Sans MS"]
 SMALL_FONT_SIZE = 14
@@ -30,6 +33,18 @@ def load_settings():
 def save_settings(settings):
     with open(CONFIG_FILE, 'w') as file:
         json.dump(settings, file)
+
+def autofeeder():
+    print("Task executed at:", datetime.now())
+
+def display_remaining_time():
+    next_run = schedule.next_run()
+    if next_run:
+        time_remaining = next_run - datetime.now()
+        return str(time_remaining).split(".")[0]
+    else:
+        time_remaining = "Autofeeder disabled"
+        return time_remaining
 
 
 
@@ -177,6 +192,8 @@ class WelcomePage(ttk.Frame):
 class InitialPage(ttk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
+        self.controller = controller
+
         image_path = "C:/Users/Shawn/OneDrive/Desktop/Smartank/Screenshot 2025-04-23 172321.png"
         image = Image.open(image_path)
         photo = ImageTk.PhotoImage(image)
@@ -187,7 +204,9 @@ class InitialPage(ttk.Frame):
         ttk.Label(self, text="- pH").pack(padx=10, pady=10)
         ttk.Label(self, text="- F").pack(padx=10, pady=10)
 
-        ttk.Label(self, text="Autofeeder timer: ").pack(padx=10, pady=10)
+        self.timer_label = ttk.Label(self, text="Autofeeder timer: Calculating...")
+        self.timer_label.pack(padx=10, pady=10)
+        self.update_timer()
 
         ttk.Button(self, text="Fishionary", width=30, command=lambda: controller.show_frame("Fishionary")).pack(pady=5)
         ttk.Button(self, text="Options", width=30, command=lambda: controller.show_frame("Options")).pack(pady=5)
@@ -201,8 +220,10 @@ class InitialPage(ttk.Frame):
         self.lbl.pack(pady=5)
         time()
 
-    def update_clock_font(self, font_name, font_size):
-        self.lbl.config(font=(font_name, font_size))
+    def update_timer(self):
+        remaining = display_remaining_time()
+        self.timer_label.config(text=f"Autofeeder timer: {remaining}")
+        self.timer_label.after(1000, self.update_timer)
 
 
 
@@ -233,8 +254,23 @@ class Autofeeder(ttk.Frame):
 
     def feed_now(self):
         print("Autofeeder runs.")
-        self.controller.settings["feeding_frequency"] = int(self.feed_var.get())
+        freq = int(self.feed_var.get())
+        self.controller.settings["feeding_frequency"] = freq
         save_settings(self.controller.settings)
+
+        schedule.clear()
+        if freq == 1:
+            schedule.every(24).hours.do(autofeeder)
+        if freq == 2:
+            schedule.every(12).hours.do(autofeeder)
+        if freq == 3:
+            schedule.every(8).hours.do(autofeeder)
+    
+
+    # while True:
+    #     schedule.run_pending()
+    #     display_remaining_time()  # Show time remaining each iteration
+    #     time.sleep(1)  # Check every second
 
 
 
