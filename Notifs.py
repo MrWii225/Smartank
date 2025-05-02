@@ -6,10 +6,11 @@ with open('settings.json', 'r') as settings:
     data=json.load(settings)
     num = data.get("phone_number")
     provider = data.get("provider")
+    message = data.get("message")
 
-# need a way to set message based on what the notification should be. Probably should do functions on GUI
+# need a way to set message based on what the notification should be.
 def set_message():
-    return "BABABA"
+    return "{message}"
 msg = EmailMessage()
 msg.set_content(f"{set_message()}")
 msg["Subject"] = "SMARTANK"

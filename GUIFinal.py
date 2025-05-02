@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from dictionaries import *
 from time import strftime
+import time
 from PIL import Image, ImageTk
 import json
 import os
@@ -14,6 +15,7 @@ LARGE_FONT_SIZE = 40
 CONFIG_FILE = "settings.json"
 NUMBER = ""
 PROVIDER = ""
+MESSAGE = ""
 
 def load_settings():
     if os.path.exists(CONFIG_FILE):
@@ -25,7 +27,8 @@ def load_settings():
         "font_size": SMALL_FONT_SIZE,
         "feeding_frequency": 2,
         "phone_num": "",
-        "provider": ""
+        "provider": "",
+        "message": ""
     }
 
 def save_settings(settings):
@@ -235,10 +238,14 @@ class Autofeeder(ttk.Frame):
         ttk.Button(self, text="Start Feeding", command=self.feed_now).pack(pady=10)
         ttk.Button(self, text="Go Back", command=lambda: controller.show_frame("Options")).pack(pady=10)
 
+    # Both functions unfinished
     def feed_now(self):
         print("Autofeeder runs.")
         self.controller.settings["feeding_frequency"] = int(self.feed_var.get())
         save_settings(self.controller.settings)
+    
+    def autofeeder(self):
+        print("Autofeeder runs")
 
 
 
