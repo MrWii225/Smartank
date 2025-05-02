@@ -244,12 +244,7 @@ class Autofeeder(ttk.Frame):
         print("Autofeeder runs.")
         self.controller.settings["feeding_frequency"] = int(self.feed_var.get())
         save_settings(self.controller.settings)
-    
-    def autofeeder(self):
-        print("Autofeeder runs")
-
-
-
+        
 class Display(ttk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
