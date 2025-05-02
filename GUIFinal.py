@@ -11,6 +11,29 @@ import schedule
 from datetime import datetime
 import threading
 from Sensors import voltage_to_ph, get_phvoltage, get_temp
+import RPi.GPIO as GPIO
+from time import sleep
+
+# GPIO Pins
+FRONT = 18
+BACK= 19
+
+# GPIO Setup
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(BACK, GPIO.OUT)
+GPIO.setup(FRONT, GPIO.OUT)
+
+
+def feed():
+	GPIO.output(FRONT, GPIO.HIGH)
+	sleep(3)
+	GPIO.output(FRONT, GPIO.LOW)
+	sleep(0.25)
+	GPIO.output(BACK, GPIO.HIGH)
+	print("back")
+	sleep(3)
+	GPIO.output(BACK, GPIO.LOW)
+	
 
 
 AVAILABLE_FONTS = ["Arial", "Georgia", "Times", "Courier", "Comic Sans MS"]
@@ -66,6 +89,7 @@ def send_sms(message, number, provider):
 
 def autofeeder():
     print("Task executed at:", datetime.now())
+    feed()
     message = "Your fish is being fed :)"
     settings = load_settings()
     number = settings.get("phone_number", "")
@@ -297,13 +321,10 @@ class Autofeeder(ttk.Frame):
     # Both functions unfinished
     def feed_now(self):
         print("Autofeeder runs.")
+        feed()
         freq = int(self.feed_var.get())
         self.controller.settings["feeding_frequency"] = freq
         save_settings(self.controller.settings)
-    
-    def autofeeder(self):
-        print("Autofeeder runs")
-
 
         if freq == 1:
             schedule.every(24).hours.do(autofeeder)
