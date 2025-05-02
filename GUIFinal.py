@@ -6,7 +6,12 @@ import time
 from PIL import Image, ImageTk
 import json
 import os
+import time
+import schedule
+from datetime import datetime
+import threading
 from Sensors import voltage_to_ph, get_phvoltage, get_temp
+
 
 AVAILABLE_FONTS = ["Arial", "Georgia", "Times", "Courier", "Comic Sans MS"]
 SMALL_FONT_SIZE = 14
@@ -17,8 +22,10 @@ NUMBER = ""
 PROVIDER = ""
 MESSAGE = ""
 
+
 pageph = voltage_to_ph(get_phvoltage())
 pagetemp_f = get_temp()
+
 
 def load_settings():
     if os.path.exists(CONFIG_FILE):
@@ -37,6 +44,43 @@ def load_settings():
 def save_settings(settings):
     with open(CONFIG_FILE, 'w') as file:
         json.dump(settings, file)
+import smtplib
+from email.message import EmailMessage
+
+
+def send_sms(message, number, provider):
+    msg = EmailMessage()
+    msg.set_content(message)
+    msg["Subject"] = "SMARTANK"
+    msg["From"] = "smartank100@gmail.com"
+    msg["To"] = f"{number}@{provider}"
+
+    try:
+        with smtplib.SMTP("smtp.gmail.com", 587) as smtp:
+            smtp.starttls()
+            smtp.login("smartank100@gmail.com", "cnae ccjt hyat qfti")  # use environment variables in production
+            smtp.send_message(msg)
+            print("SMS sent successfully.")
+    except Exception as e:
+        print(f"Failed to send SMS: {e}")
+
+def autofeeder():
+    print("Task executed at:", datetime.now())
+    message = "Your fish is being fed :)"
+    settings = load_settings()
+    number = settings.get("phone_number", "")
+    provider = settings.get("provider", "")
+    if number and provider:
+        send_sms(message, number, provider)
+
+def display_remaining_time():
+    next_run = schedule.next_run()
+    if next_run:
+        time_remaining = next_run - datetime.now()
+        return str(time_remaining).split(".")[0]
+    else:
+        time_remaining = "Autofeeder disabled"
+        return time_remaining
 
 
 
@@ -78,6 +122,12 @@ class SmartankGUI(tk.Tk):
             self.show_frame("WelcomePage")
         else:
             self.show_frame("InitialPage")
+        threading.Thread(target=self.run_schedule_loop, daemon=True).start()
+    
+    def run_schedule_loop(self):
+        while True:
+            schedule.run_pending()
+            time.sleep(1)
 
     def apply_theme(self, theme):
         if theme == "dark":
@@ -139,7 +189,6 @@ class SmartankGUI(tk.Tk):
         save_settings(self.settings)
 
 
-
 class WelcomePage(ttk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
@@ -184,6 +233,8 @@ class WelcomePage(ttk.Frame):
 class InitialPage(ttk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
+        self.controller = controller
+
         image_path = "C:/Users/Shawn/OneDrive/Desktop/Smartank/Screenshot 2025-04-23 172321.png"
         image = Image.open(image_path)
         photo = ImageTk.PhotoImage(image)
@@ -195,7 +246,9 @@ class InitialPage(ttk.Frame):
         ttk.Label(self, text=f"-{pageph} pH").pack(padx=10, pady=10)
         ttk.Label(self, text=f"-{pagetemp_f}°F").pack(padx=10, pady=10)
 
-        ttk.Label(self, text="Autofeeder timer: ").pack(padx=10, pady=10)
+        self.timer_label = ttk.Label(self, text="Autofeeder timer: Calculating...")
+        self.timer_label.pack(padx=10, pady=10)
+        self.update_timer()
 
         ttk.Button(self, text="Fishionary", width=30, command=lambda: controller.show_frame("Fishionary")).pack(pady=5)
         ttk.Button(self, text="Options", width=30, command=lambda: controller.show_frame("Options")).pack(pady=5)
@@ -209,8 +262,10 @@ class InitialPage(ttk.Frame):
         self.lbl.pack(pady=5)
         time()
 
-    def update_clock_font(self, font_name, font_size):
-        self.lbl.config(font=(font_name, font_size))
+    def update_timer(self):
+        remaining = display_remaining_time()
+        self.timer_label.config(text=f"Autofeeder timer: {remaining}")
+        self.timer_label.after(1000, self.update_timer)
 
 
 
@@ -242,9 +297,29 @@ class Autofeeder(ttk.Frame):
     # Both functions unfinished
     def feed_now(self):
         print("Autofeeder runs.")
-        self.controller.settings["feeding_frequency"] = int(self.feed_var.get())
+        freq = int(self.feed_var.get())
+        self.controller.settings["feeding_frequency"] = freq
         save_settings(self.controller.settings)
-        
+    
+    def autofeeder(self):
+        print("Autofeeder runs")
+
+
+        if freq == 1:
+            schedule.every(24).hours.do(autofeeder)
+        if freq == 2:
+            schedule.every(12).hours.do(autofeeder)
+        if freq == 3:
+            schedule.every(0.001).hours.do(autofeeder)
+    
+
+    # while True:
+    #     schedule.run_pending()
+    #     display_remaining_time()  # Show time remaining each iteration
+    #     time.sleep(1)  # Check every second
+
+
+
 class Display(ttk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
