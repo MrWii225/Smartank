@@ -8,6 +8,7 @@ import os
 import time
 import schedule
 from datetime import datetime
+import threading
 
 AVAILABLE_FONTS = ["Arial", "Georgia", "Times", "Courier", "Comic Sans MS"]
 SMALL_FONT_SIZE = 14
@@ -16,6 +17,7 @@ LARGE_FONT_SIZE = 40
 CONFIG_FILE = "settings.json"
 NUMBER = ""
 PROVIDER = ""
+MESSAGE = ""
 
 def load_settings():
     if os.path.exists(CONFIG_FILE):
@@ -27,15 +29,41 @@ def load_settings():
         "font_size": SMALL_FONT_SIZE,
         "feeding_frequency": 2,
         "phone_num": "",
-        "provider": ""
+        "provider": "",
+        "message": ""
     }
 
 def save_settings(settings):
     with open(CONFIG_FILE, 'w') as file:
         json.dump(settings, file)
+import smtplib
+from email.message import EmailMessage
+
+
+def send_sms(message, number, provider):
+    msg = EmailMessage()
+    msg.set_content(message)
+    msg["Subject"] = "SMARTANK"
+    msg["From"] = "smartank100@gmail.com"
+    msg["To"] = f"{number}@{provider}"
+
+    try:
+        with smtplib.SMTP("smtp.gmail.com", 587) as smtp:
+            smtp.starttls()
+            smtp.login("smartank100@gmail.com", "cnae ccjt hyat qfti")  # use environment variables in production
+            smtp.send_message(msg)
+            print("SMS sent successfully.")
+    except Exception as e:
+        print(f"Failed to send SMS: {e}")
 
 def autofeeder():
     print("Task executed at:", datetime.now())
+    message = "Your fish is being fed :)"
+    settings = load_settings()
+    number = settings.get("phone_number", "")
+    provider = settings.get("provider", "")
+    if number and provider:
+        send_sms(message, number, provider)
 
 def display_remaining_time():
     next_run = schedule.next_run()
@@ -86,6 +114,12 @@ class SmartankGUI(tk.Tk):
             self.show_frame("WelcomePage")
         else:
             self.show_frame("InitialPage")
+        threading.Thread(target=self.run_schedule_loop, daemon=True).start()
+    
+    def run_schedule_loop(self):
+        while True:
+            schedule.run_pending()
+            time.sleep(1)
 
     def apply_theme(self, theme):
         if theme == "dark":
@@ -145,7 +179,6 @@ class SmartankGUI(tk.Tk):
         self.frames["InitialPage"].update_clock_font(self.current_font, self.current_font_size)
 
         save_settings(self.settings)
-
 
 
 class WelcomePage(ttk.Frame):
@@ -258,13 +291,13 @@ class Autofeeder(ttk.Frame):
         self.controller.settings["feeding_frequency"] = freq
         save_settings(self.controller.settings)
 
-        schedule.clear()
+
         if freq == 1:
             schedule.every(24).hours.do(autofeeder)
         if freq == 2:
             schedule.every(12).hours.do(autofeeder)
         if freq == 3:
-            schedule.every(8).hours.do(autofeeder)
+            schedule.every(0.001).hours.do(autofeeder)
     
 
     # while True:
