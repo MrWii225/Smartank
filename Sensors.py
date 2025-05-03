@@ -31,6 +31,8 @@ def get_phvoltage():
     return ph_channel.voltage 
 
 def get_temp():
+    temperature_c = temp_sensor.get_temperature()
+    temperature_f = (temperature_c * 9/5) + 32 
     return temperature_f
 
 if __name__ == "__main__":
