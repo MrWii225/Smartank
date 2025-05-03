@@ -127,18 +127,18 @@ class SmartankGUI(tk.Tk):
 class InitialPage(ttk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
-        image_path = "C:/Users/Shawn/OneDrive/Desktop/Smartank/Screenshot 2025-04-23 172321.png"
+        image_path = "images/Screenshot 2025-04-23 172321.png"
         image = Image.open(image_path)
         photo = ImageTk.PhotoImage(image)
         label = ttk.Label(self, image=photo)
         label.image = photo
         label.pack(padx=10, pady=15)
 
-        pageph = voltage_to_ph(get_phvoltage())
-        pagetemp_f = get_temp()
-
-        ttk.Label(self, text=f"-{pageph} pH").pack(padx=10, pady=10)
-        ttk.Label(self, text=f"-{pagetemp_f}°F").pack(padx=10, pady=10)
+        self.ph_label = ttk.Label(self, text=" pH")
+        self.ph_label.pack(padx=10, pady=10)
+        self.temp_label = ttk.Label(self, text=" °F")
+        self.temp_label.pack(padx=10, pady=10)
+        self.update_sensor_readings()
 
         ttk.Label(self, text="Autofeeder timer: ").pack(padx=10, pady=10)
 
@@ -156,6 +156,15 @@ class InitialPage(ttk.Frame):
 
     def update_clock_font(self, font_name, font_size):
         self.lbl.config(font=(font_name, font_size))
+    
+    def update_sensor_readings(self):
+        pageph = voltage_to_ph(get_phvoltage())
+        pagetemp_f = get_temp()
+
+        self.ph_label.config(text=f"{pageph:.2f} pH")
+        self.temp_label.config(text=f"{pagetemp_f:.2f} °F")
+
+        self.after(3000, self.update_sensor_readings) #updates sensor readings after 3 seconds
 
 
 
