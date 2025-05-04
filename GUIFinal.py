@@ -340,7 +340,7 @@ class Options(ttk.Frame):
         ttk.Button(self, text="Display", width=30, command=lambda: controller.show_frame("Display")).pack(pady=8)
         ttk.Button(self, text="Autofeeder", width=30, command=lambda: controller.show_frame("Autofeeder")).pack(pady=8)
         ttk.Button(self, text="Fish Parameters", width=30, command=lambda: controller.show_frame("FishParams")).pack(pady=8)
-
+        ttk.Button(self, text="Notifications", width=30, command=lambda: controller.show_frame("Notifications")).pack(pady=8)
 
 
 class Autofeeder(ttk.Frame):
