@@ -275,7 +275,7 @@ class Display(ttk.Frame):
         super().__init__(parent)
         self.controller = controller
 
-        ttk.Button(self, text="Switch Theme", command=controller.toggle_theme).pack(pady=6)
+        ttk.Button(self, text="Switch Theme", command=controller.apply_theme).pack(pady=6)
 
         ttk.Label(self, text="Change Font:").pack(pady=6)
         font_choice = ttk.Combobox(self, values=AVAILABLE_FONTS, state="readonly")
