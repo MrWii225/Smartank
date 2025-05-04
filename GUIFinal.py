@@ -51,6 +51,8 @@ WARNING = ""
 PHWARNING = ""
 HIGHPH = high_ph[FISHTYPE]
 LOWPH = low_ph[FISHTYPE]
+temp_alert_sent = None
+ph_alert_sent = None
 
 
 pageph = voltage_to_ph(get_phvoltage())
@@ -111,25 +113,30 @@ def display_remaining_time():
         time_remaining = next_run - datetime.now()
         return str(time_remaining).split(".")[0]
     else:
-        time_remaining = "Autofeeder disabled"
-        return time_remaining
+        return "Autofeeder disabled"
 
 def Warning():
-    global WARNING
+    global WARNING, temp_alert_sent
     temp = get_temp()
     if int(temp) > int(HIGHTEMP):
         message = "TEMP IS TOO HIGH"
         settings = load_settings()
         number = settings.get("phone_number", "")
         provider = settings.get("provider", "")
-        send_sms(message, number, provider)
+        if number and provider:
+            if temp_alert_sent != message:
+                send_sms(message, number, provider)
+                temp_alert_sent = message
         WARNING = message
     elif int(temp) < int(LOWTEMP):
         message = "TEMP IS TOO LOW"
         settings = load_settings()
         number = settings.get("phone_number", "")
         provider = settings.get("provider", "")
-        send_sms(message, number, provider)
+        if number and provider:
+            if temp_alert_sent != message:
+                send_sms(message, number, provider)
+                temp_alert_sent = message
         WARNING = message
     else:
         WARNING = ""
@@ -142,14 +149,20 @@ def PHWarning():
         settings = load_settings()
         number = settings.get("phone_number", "")
         provider = settings.get("provider", "")
-        send_sms(message, number, provider)
+        if number and provider:
+            if ph_alert_sent != message:
+                send_sms(message, number, provider)
+                ph_alert_sent = message
         PHWARNING = message
     elif ph < float(LOWPH):
         message = "PH IS TOO LOW"
         settings = load_settings()
         number = settings.get("phone_number", "")
         provider = settings.get("provider", "")
-        send_sms(message, number, provider)
+        if number and provider:
+            if ph_alert_sent != message:
+                send_sms(message, number, provider)
+                ph_alert_sent = message
         PHWARNING = message
     else:
         PHWARNING = ""
@@ -159,6 +172,7 @@ class SmartankGUI(tk.Tk):
         super().__init__()
         self.title("Smartank")
         self.attributes("-fullscreen", True)
+        self.bind("<Escape>", lambda e: self.attributes("-fullscreen", False))
         self.style = ttk.Style(self)
         self.style.theme_use("clam")
 
@@ -342,12 +356,12 @@ class InitialPage(ttk.Frame):
     def update_sensor_readings(self):
         pageph = voltage_to_ph(get_phvoltage())
         pagetemp_f = get_temp()
-        Warning()
-        PHWarning()
+        schedule.every(10).seconds.do(Warning).tag("sensor")
+        schedule.every(10).seconds.do(PHWarning).tag("sensor")
         self.ph_label.config(text=f"{pageph:.2f} pH {PHWARNING}")
         self.temp_label.config(text=f"{pagetemp_f:.2f} °F {WARNING}")
 
-        self.after(3000, self.update_sensor_readings) #updates sensor readings after 3 seconds
+        self.after(5000, self.update_sensor_readings) #updates sensor readings after 3 seconds
 
     def update_timer(self):
         remaining = display_remaining_time()
@@ -389,15 +403,14 @@ class Autofeeder(ttk.Frame):
         freq = int(self.feed_var.get())
         self.controller.settings["feeding_frequency"] = freq
         save_settings(self.controller.settings)
-        schedule.clear()
+        schedule.clear("autofeeder")
 
         if freq == 1:
-            schedule.every(24).hours.do(autofeeder)
-        if freq == 2:
-            schedule.every(12).hours.do(autofeeder)
-        if freq == 3:
-            schedule.every(8).hours.do(autofeeder)
-    
+            schedule.every(24).hours.do(autofeeder).tag("autofeeder")
+        elif freq == 2:
+            schedule.every(12).hours.do(autofeeder).tag("autofeeder")
+        elif freq == 3:
+            schedule.every(8).hours.do(autofeeder).tag("autofeeder")
 
     # while True:
     #     schedule.run_pending()

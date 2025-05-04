@@ -14,7 +14,7 @@ with open('settings.json', 'r') as settings:
 #     return MESSAGE
 
 msg = EmailMessage()
-msg.set_content(f"{MESSAGE}")
+msg.set_content(f"{message}")
 msg["Subject"] = "SMARTANK"
 msg["From"] = "smartank100@gmail.com"
 msg["To"] = f"{num}@{provider}" # One bracket will house the number the user inputs and the other will include the
