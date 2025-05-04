@@ -36,7 +36,7 @@ def feed():
 	
 
 
-AVAILABLE_FONTS = ["Arial", "Georgia", "Times", "Courier", "Comic Sans MS"]
+AVAILABLE_FONTS = ["Arial", "Georgia", "Times", "Helvetica", "Courier"]
 SMALL_FONT_SIZE = 14
 MED_FONT_SIZE = 24
 LARGE_FONT_SIZE = 40
@@ -114,6 +114,7 @@ class SmartankGUI(tk.Tk):
         self.title("Smartank")
         self.geometry("1000x600")
         self.style = ttk.Style(self)
+        self.style.theme_use("clam")
 
         self.settings = load_settings()
         self._current_theme = self.settings["theme"]
@@ -166,7 +167,7 @@ class SmartankGUI(tk.Tk):
     def apply_dark_theme(self):
         self.style.configure("TFrame", background="#2E2E2E")
         self.style.configure("TLabel", background="#2E2E2E", foreground="#FFFFFF")
-        self.style.configure("TButton", background="#3E3E3E", foreground="#000000")
+        self.style.configure("TButton", background="#505050", foreground="#F2F2F2")
         self.style.map("TButton", background=[('active', '#505050')])
         self.style.configure("TCombobox", fieldbackground="#3E3E3E", background="#2E2E2E", foreground="#000000")
 
