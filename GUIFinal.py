@@ -48,6 +48,9 @@ FISHTYPE = "Goldfish"
 HIGHTEMP = high_temp[FISHTYPE]
 LOWTEMP = low_temp[FISHTYPE]
 WARNING = ""
+PHWARNING = ""
+HIGHPH = high_ph[FISHTYPE]
+LOWPH = low_ph[FISHTYPE]
 
 
 pageph = voltage_to_ph(get_phvoltage())
@@ -114,22 +117,42 @@ def display_remaining_time():
 def Warning():
     global WARNING
     temp = get_temp()
-    if int(temp) > int(high_temp[FISHTYPE]):
+    if int(temp) > int(HIGHTEMP):
+        message = "TEMP IS TOO HIGH"
+        settings = load_settings()
+        number = settings.get("phone_number", "")
+        provider = settings.get("provider", "")
+        send_sms(message, number, provider)
+        WARNING = message
+    elif int(temp) < int(LOWTEMP):
         message = "TEMP IS TOO LOW"
         settings = load_settings()
         number = settings.get("phone_number", "")
         provider = settings.get("provider", "")
         send_sms(message, number, provider)
-        WARNING = "TEMP IS TOO LOW"
-    elif int(temp) < int(low_temp):
-        message = "TEMP IS TOO LOW"
-        settings = load_settings()
-        number = settings.get("phone_number", "")
-        provider = settings.get("provider", "")
-        send_sms(message, number, provider)
-        WARNING = "TEMP IS TOO LOW"
+        WARNING = message
     else:
         WARNING = ""
+
+def PHWarning():
+    global PHWARNING
+    ph = voltage_to_ph(get_phvoltage())
+    if ph > HIGHPH:
+        message = "PH IS TOO HIGH"
+        settings = load_settings()
+        number = settings.get("phone_number", "")
+        provider = settings.get("provider", "")
+        send_sms(message, number, provider)
+        PHWARNING = message
+    elif ph < LOWPH:
+        message = "PH IS TOO LOW"
+        settings = load_settings()
+        number = settings.get("phone_number", "")
+        provider = settings.get("provider", "")
+        send_sms(message, number, provider)
+        PHWARNING = message
+    else:
+        PHWARNING = ""
 
 class SmartankGUI(tk.Tk):
     def __init__(self):
@@ -319,8 +342,8 @@ class InitialPage(ttk.Frame):
     def update_sensor_readings(self):
         pageph = voltage_to_ph(get_phvoltage())
         pagetemp_f = get_temp()
-
-        self.ph_label.config(text=f"{pageph:.2f} pH {WARNING}")
+        Warning()
+        self.ph_label.config(text=f"{pageph:.2f} pH {PHWARNING}")
         self.temp_label.config(text=f"{pagetemp_f:.2f} °F {WARNING}")
 
         self.after(3000, self.update_sensor_readings) #updates sensor readings after 3 seconds
@@ -365,6 +388,7 @@ class Autofeeder(ttk.Frame):
         freq = int(self.feed_var.get())
         self.controller.settings["feeding_frequency"] = freq
         save_settings(self.controller.settings)
+        schedule.clear()
 
         if freq == 1:
             schedule.every(24).hours.do(autofeeder)
@@ -543,5 +567,3 @@ class DwarfGourami(InfoPage):
 if __name__ == "__main__":
     app = SmartankGUI()
     app.mainloop()
-    while True:
-        Warning()
