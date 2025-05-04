@@ -22,17 +22,17 @@ BACK= 19
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(BACK, GPIO.OUT)
 GPIO.setup(FRONT, GPIO.OUT)
-
+GPIO.output(FRONT, GPIO.HIGH)
+GPIO.output(BACK, GPIO.HIGH)
 
 def feed():
-	GPIO.output(FRONT, GPIO.HIGH)
-	sleep(3)
 	GPIO.output(FRONT, GPIO.LOW)
-	sleep(0.25)
-	GPIO.output(BACK, GPIO.HIGH)
-	print("back")
 	sleep(3)
+	GPIO.output(FRONT, GPIO.HIGH)
+	sleep(0.25)
 	GPIO.output(BACK, GPIO.LOW)
+	sleep(3)
+	GPIO.output(BACK, GPIO.HIGH)
 	
 
 
@@ -44,6 +44,10 @@ CONFIG_FILE = "settings.json"
 NUMBER = ""
 PROVIDER = ""
 MESSAGE = ""
+FISHTYPE = "Goldfish"
+HIGHTEMP = high_temp[FISHTYPE]
+LOWTEMP = low_temp[FISHTYPE]
+WARNING = ""
 
 
 pageph = voltage_to_ph(get_phvoltage())
@@ -61,7 +65,8 @@ def load_settings():
         "feeding_frequency": 2,
         "phone_num": "",
         "provider": "",
-        "message": ""
+        "message": "",
+        "Fish_type": ""
     }
 
 def save_settings(settings):
@@ -106,7 +111,25 @@ def display_remaining_time():
         time_remaining = "Autofeeder disabled"
         return time_remaining
 
-
+def Warning():
+    global WARNING
+    temp = get_temp()
+    if int(temp) > int(high_temp[FISHTYPE]):
+        message = "TEMP IS TOO LOW"
+        settings = load_settings()
+        number = settings.get("phone_number", "")
+        provider = settings.get("provider", "")
+        send_sms(message, number, provider)
+        WARNING = "TEMP IS TOO LOW"
+    elif int(temp) < int(low_temp):
+        message = "TEMP IS TOO LOW"
+        settings = load_settings()
+        number = settings.get("phone_number", "")
+        provider = settings.get("provider", "")
+        send_sms(message, number, provider)
+        WARNING = "TEMP IS TOO LOW"
+    else:
+        WARNING = ""
 
 class SmartankGUI(tk.Tk):
     def __init__(self):
@@ -137,7 +160,7 @@ class SmartankGUI(tk.Tk):
         self.PROVIDER = self.settings.get("provider", "")
 
         self.frames = {}
-        for PageClass in (WelcomePage, InitialPage, Options, Display, Autofeeder, FishParams, Fishionary, Goldfish, Guppy, Zebrafish, Tetra, Minnow, PeaPuffer, Barb, Swordtail, DwarfGourami):
+        for PageClass in (WelcomePage, InitialPage, Options, Display, Autofeeder, Notifications, FishParams, Fishionary, Goldfish, Guppy, Zebrafish, Tetra, Minnow, PeaPuffer, Barb, Swordtail, DwarfGourami):
             page_name = PageClass.__name__
             frame = PageClass(parent=container, controller=self)
             self.frames[page_name] = frame
@@ -254,11 +277,10 @@ class WelcomePage(ttk.Frame):
             tk.messagebox.showerror("Error", "Please fill in all fields.")
 
 
-
 class InitialPage(ttk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
-        image_path = "images/Screenshot 2025-04-23 172321.png"
+        image_path = "images/SMARTANK.png"
         self.controller = controller
 
         image = Image.open(image_path)
@@ -298,8 +320,8 @@ class InitialPage(ttk.Frame):
         pageph = voltage_to_ph(get_phvoltage())
         pagetemp_f = get_temp()
 
-        self.ph_label.config(text=f"{pageph:.2f} pH")
-        self.temp_label.config(text=f"{pagetemp_f:.2f} °F")
+        self.ph_label.config(text=f"{pageph:.2f} pH {WARNING}")
+        self.temp_label.config(text=f"{pagetemp_f:.2f} °F {WARNING}")
 
         self.after(3000, self.update_sensor_readings) #updates sensor readings after 3 seconds
 
@@ -349,7 +371,7 @@ class Autofeeder(ttk.Frame):
         if freq == 2:
             schedule.every(12).hours.do(autofeeder)
         if freq == 3:
-            schedule.every(0.001).hours.do(autofeeder)
+            schedule.every(8).hours.do(autofeeder)
     
 
     # while True:
@@ -384,8 +406,58 @@ class FishParams(ttk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
+        self.fish_type_var = tk.StringVar()
+
         ttk.Label(self, text="Fish Parameters Page (under construction)").pack(pady=20)
-        ttk.Button(self, text="Go Back", command=lambda: controller.show_frame("Options")).pack(pady=10)
+        self.fish_combo = ttk.Combobox(self, textvariable=self.fish_type_var, values= ["Goldfish","Guppy","Zebrafish","Tetra","Minnow","Pea Puffer","Barb","Swordtail"]).pack(pady=10)
+        ttk.Entry(self)
+        ttk.Button(self, text="Confirm", command= self.save_fish).pack(pady=10)
+        ttk.Button(self, text="Go Back", command=lambda: controller.show_frame("Options")).pack(pady=20)
+
+    def save_fish(self):
+        fish_type = self.fish_type_var.get()
+        if fish_type:
+            self.controller.settings["Fish_type"] = fish_type
+            save_settings(self.controller.settings)
+
+class Notifications(ttk.Frame):
+    def __init__(self, parent, controller):
+        super().__init__(parent)
+        self.controller = controller
+        ttk.Label(self, text="Enter Your Phone Number").pack(pady=10)
+        self.phone_entry = ttk.Entry(self)
+        self.phone_entry.pack(pady=5)
+
+        ttk.Label(self, text="Choose Your Provider").pack(pady=10)
+        self.provider_var = tk.StringVar()
+        provider_options = ["AT&T", "Verizon", "T-Mobile", "Sprint"]
+        provider_menu = ttk.Combobox(self, textvariable=self.provider_var, values=provider_options, state="readonly")
+        provider_menu.pack(pady=5)
+
+        ttk.Button(self, text="Update", command=self.save_info).pack(pady=20)
+        ttk.Button(self, text="Go Back", command=lambda: controller.show_frame("Options")).pack(pady=20)
+
+
+    def save_info(self):
+        phone = self.phone_entry.get().strip()
+        if self.provider_var.get().strip() == "AT&T":
+            provider = "txt.att.net"
+        elif self.provider_var.get().strip() == "Verizon":
+            provider = "vtext.com"
+        elif self.provider_var.get().strip() == "T-Mobile":
+            provider = "tmomail.net"
+        elif self.provider_var.get().strip() == "Sprint":
+            provider = "messaging.sprintpcs.com"
+
+        if phone and provider:
+            self.controller.settings["phone_number"] = phone
+            self.controller.settings["provider"] = provider
+            save_settings(self.controller.settings)
+            self.controller.NUMBER = phone
+            self.controller.PROVIDER = provider
+            self.controller.show_frame("InitialPage")
+        else:
+            tk.messagebox.showerror("Error", "Please fill in all fields.")
 
 
 
@@ -471,3 +543,5 @@ class DwarfGourami(InfoPage):
 if __name__ == "__main__":
     app = SmartankGUI()
     app.mainloop()
+    while True:
+        Warning()
