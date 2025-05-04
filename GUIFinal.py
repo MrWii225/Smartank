@@ -104,7 +104,7 @@ class SmartankGUI(tk.Tk):
         self.PROVIDER = self.settings.get("provider", "")
 
         self.frames = {}
-        for PageClass in (WelcomePage, InitialPage, Options, Display, Autofeeder, FishParams, Fishionary, Goldfish, Guppy, Zebrafish, Tetra, Minnow, PeaPuffer, Barb, Swordtail, DwarfGourami):
+        for PageClass in (WelcomePage, InitialPage, Options, Display, Autofeeder, FishParams, Notifications, Fishionary, Goldfish, Guppy, Zebrafish, Tetra, Minnow, PeaPuffer, Barb, Swordtail, DwarfGourami):
             page_name = PageClass.__name__
             frame = PageClass(parent=container, controller=self)
             self.frames[page_name] = frame
@@ -263,11 +263,11 @@ class InitialPage(ttk.Frame):
 class Options(ttk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
-        ttk.Button(self, text="Go Back", width=10, command=lambda: controller.show_frame("InitialPage")).pack(pady=8)
-        ttk.Button(self, text="Display", width=30, command=lambda: controller.show_frame("Display")).pack(pady=8)
-        ttk.Button(self, text="Autofeeder", width=30, command=lambda: controller.show_frame("Autofeeder")).pack(pady=8)
-        ttk.Button(self, text="Fish Parameters", width=30, command=lambda: controller.show_frame("FishParams")).pack(pady=8)
-
+        ttk.Button(self, text="Display", width=30, command=lambda: controller.show_frame("Display")).pack(pady=10)
+        ttk.Button(self, text="Autofeeder", width=30, command=lambda: controller.show_frame("Autofeeder")).pack(pady=10)
+        ttk.Button(self, text="Fish Parameters", width=30, command=lambda: controller.show_frame("FishParams")).pack(pady=10)
+        ttk.Button(self, text= "Notifications", width=30, command= lambda: controller.show_frame("Notifications")).pack(pady=10)
+        ttk.Button(self, text="Go Back", width=10, command=lambda: controller.show_frame("InitialPage")).pack(pady=20)
 
 
 class Autofeeder(ttk.Frame):
@@ -283,7 +283,7 @@ class Autofeeder(ttk.Frame):
         feed_menu.pack(pady=5)
 
         ttk.Button(self, text="Start Feeding", command=self.feed_now).pack(pady=10)
-        ttk.Button(self, text="Go Back", command=lambda: controller.show_frame("Options")).pack(pady=10)
+        ttk.Button(self, text="Go Back", command=lambda: controller.show_frame("Options")).pack(pady=20)
 
     def feed_now(self):
         print("Autofeeder runs.")
@@ -310,21 +310,21 @@ class Autofeeder(ttk.Frame):
 class Display(ttk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
-        ttk.Button(self, text="Go Back", command=lambda: controller.show_frame("Options")).pack(pady=6)
 
-        ttk.Button(self, text="Switch Theme", command=controller.toggle_theme).pack(pady=6)
+        ttk.Button(self, text="Switch Theme", command=controller.toggle_theme).pack(pady=5)
 
-        ttk.Label(self, text="Change Font:").pack(pady=6)
+        ttk.Label(self, text="Change Font:").pack(pady=5)
         font_choice = ttk.Combobox(self, values=AVAILABLE_FONTS, state="readonly")
         font_choice.set(controller.current_font)
-        font_choice.pack(pady=6)
+        font_choice.pack(pady=5)
         font_choice.bind("<<ComboboxSelected>>", lambda e: controller.set_font(font_choice.get()))
 
-        ttk.Label(self, text="Change Font Size:").pack(pady=6)
+        ttk.Label(self, text="Change Font Size:").pack(pady=5)
         font_size_choice = ttk.Combobox(self, values=["Small", "Medium", "Large"], state="readonly")
         font_size_choice.set("Small" if controller.current_font_size == SMALL_FONT_SIZE else "Large" if controller.current_font_size == LARGE_FONT_SIZE else "Medium")
-        font_size_choice.pack(pady=6)
+        font_size_choice.pack(pady=5)
         font_size_choice.bind("<<ComboboxSelected>>", lambda e: controller.set_font_size(font_size_choice.get()))
+        ttk.Button(self, text="Go Back", command=lambda: controller.show_frame("Options")).pack(pady=20)
 
 
 
@@ -333,7 +333,51 @@ class FishParams(ttk.Frame):
         super().__init__(parent)
         self.controller = controller
         ttk.Label(self, text="Fish Parameters Page (under construction)").pack(pady=20)
-        ttk.Button(self, text="Go Back", command=lambda: controller.show_frame("Options")).pack(pady=10)
+        ttk.Combobox(self, values= ["Goldfish","Guppy","Zebrafish","Tetra","Minnow","Pea Puffer","Barb","Swordtail"]).pack(pady=10)
+        ttk.Entry(self)
+        ttk.Button(self, text="Go Back", command=lambda: controller.show_frame("Options")).pack(pady=20)
+
+
+
+class Notifications(ttk.Frame):
+    def __init__(self, parent, controller):
+        super().__init__(parent)
+        self.controller = controller
+        ttk.Label(self, text="Enter Your Phone Number").pack(pady=10)
+        self.phone_entry = ttk.Entry(self)
+        self.phone_entry.pack(pady=5)
+
+        ttk.Label(self, text="Choose Your Provider").pack(pady=10)
+        self.provider_var = tk.StringVar()
+        provider_options = ["AT&T", "Verizon", "T-Mobile", "Sprint"]
+        provider_menu = ttk.Combobox(self, textvariable=self.provider_var, values=provider_options, state="readonly")
+        provider_menu.pack(pady=5)
+
+        ttk.Button(self, text="Update", command=self.save_info).pack(pady=20)
+        ttk.Button(self, text="Go Back", command=lambda: controller.show_frame("Options")).pack(pady=20)
+
+
+    def save_info(self):
+        phone = self.phone_entry.get().strip()
+        if self.provider_var.get().strip() == "AT&T":
+            provider = "txt.att.net"
+        elif self.provider_var.get().strip() == "Verizon":
+            provider = "vtext.com"
+        elif self.provider_var.get().strip() == "T-Mobile":
+            provider = "tmomail.net"
+        elif self.provider_var.get().strip() == "Sprint":
+            provider = "messaging.sprintpcs.com"
+
+        if phone and provider:
+            self.controller.settings["phone_number"] = phone
+            self.controller.settings["provider"] = provider
+            save_settings(self.controller.settings)
+            self.controller.NUMBER = phone
+            self.controller.PROVIDER = provider
+            self.controller.show_frame("InitialPage")
+        else:
+            tk.messagebox.showerror("Error", "Please fill in all fields.")
+
 
 
 
