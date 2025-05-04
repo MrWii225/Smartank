@@ -26,6 +26,29 @@ ideal_temp_f = {
     "Dwarf Gourami":"75°F-80°F"
 }
 
+high_temp = {
+    "Goldfish":"74",
+    "Guppy":"82",
+    "Zebrafish":"83",
+    "Tetra":"80",
+    "Minnow":"70",
+    "Pea Puffer":"82",
+    "Barb":"80",
+    "Swordtail":"82",
+    "Dwarf Gourami":"80"
+}
+
+low_temp = {
+    "Goldfish":"68",
+    "Guppy":"72",
+    "Zebrafish":"79",
+    "Tetra":"75",
+    "Minnow":"60",
+    "Pea Puffer":"74",
+    "Barb":"75",
+    "Swordtail":"64",
+    "Dwarf Gourami":"75"
+}
 
 ideal_temp_c = {
     "Goldfish":"20°C-23°C",
