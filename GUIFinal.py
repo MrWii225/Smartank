@@ -275,7 +275,7 @@ class WelcomePage(ttk.Frame):
 class InitialPage(ttk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
-        image_path = "images/Screenshot 2025-04-23 172321.png"
+        image_path = "images/SMARTANK.png"
         self.controller = controller
 
         image = Image.open(image_path)
