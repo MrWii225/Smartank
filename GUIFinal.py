@@ -137,14 +137,14 @@ def Warning():
 def PHWarning():
     global PHWARNING
     ph = voltage_to_ph(get_phvoltage())
-    if ph > HIGHPH:
+    if ph > float(HIGHPH):
         message = "PH IS TOO HIGH"
         settings = load_settings()
         number = settings.get("phone_number", "")
         provider = settings.get("provider", "")
         send_sms(message, number, provider)
         PHWARNING = message
-    elif ph < LOWPH:
+    elif ph < float(LOWPH):
         message = "PH IS TOO LOW"
         settings = load_settings()
         number = settings.get("phone_number", "")
@@ -158,7 +158,7 @@ class SmartankGUI(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Smartank")
-        self.geometry("1000x600")
+        self.attributes("-fullscreen", True)
         self.style = ttk.Style(self)
         self.style.theme_use("clam")
 
@@ -343,6 +343,7 @@ class InitialPage(ttk.Frame):
         pageph = voltage_to_ph(get_phvoltage())
         pagetemp_f = get_temp()
         Warning()
+        PHWarning()
         self.ph_label.config(text=f"{pageph:.2f} pH {PHWARNING}")
         self.temp_label.config(text=f"{pagetemp_f:.2f} °F {WARNING}")
 
