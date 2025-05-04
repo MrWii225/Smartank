@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from dictionaries import *
 from time import strftime
+import time
 from PIL import Image, ImageTk
 import json
 import os
@@ -9,6 +10,8 @@ import time
 import schedule
 from datetime import datetime
 import threading
+from Sensors import voltage_to_ph, get_phvoltage, get_temp
+
 
 AVAILABLE_FONTS = ["Arial", "Georgia", "Times", "Courier", "Comic Sans MS"]
 SMALL_FONT_SIZE = 14
@@ -18,6 +21,11 @@ CONFIG_FILE = "settings.json"
 NUMBER = ""
 PROVIDER = ""
 MESSAGE = ""
+
+
+pageph = voltage_to_ph(get_phvoltage())
+pagetemp_f = get_temp()
+
 
 def load_settings():
     if os.path.exists(CONFIG_FILE):
@@ -234,8 +242,9 @@ class InitialPage(ttk.Frame):
         label.image = photo
         label.pack(padx=10, pady=15)
 
-        ttk.Label(self, text="- pH").pack(padx=10, pady=10)
-        ttk.Label(self, text="- F").pack(padx=10, pady=10)
+
+        ttk.Label(self, text=f"-{pageph} pH").pack(padx=10, pady=10)
+        ttk.Label(self, text=f"-{pagetemp_f}°F").pack(padx=10, pady=10)
 
         self.timer_label = ttk.Label(self, text="Autofeeder timer: Calculating...")
         self.timer_label.pack(padx=10, pady=10)
@@ -285,11 +294,15 @@ class Autofeeder(ttk.Frame):
         ttk.Button(self, text="Start Feeding", command=self.feed_now).pack(pady=10)
         ttk.Button(self, text="Go Back", command=lambda: controller.show_frame("Options")).pack(pady=20)
 
+    # Both functions unfinished
     def feed_now(self):
         print("Autofeeder runs.")
         freq = int(self.feed_var.get())
         self.controller.settings["feeding_frequency"] = freq
         save_settings(self.controller.settings)
+    
+    def autofeeder(self):
+        print("Autofeeder runs")
 
 
         if freq == 1:
