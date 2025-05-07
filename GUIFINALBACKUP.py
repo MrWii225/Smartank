@@ -171,7 +171,7 @@ def PHWarning():
         PHWARNING = message
     else:
         PHWARNING = ""
-        
+
 # def Warning():
 #     global WARNING
 #     temp = get_temp()
@@ -360,9 +360,12 @@ class WelcomePage(ttk.Frame):
 
 
 class InitialPage(ttk.Frame):
-    def __init__(self, parent, controller):
+    def __init__(self, theme, parent, controller):
         super().__init__(parent)
-        image_path = "images/SMARTANK.png"
+        if theme == "dark":
+            image_path = "images/SMARTANKDark.png"
+        else:
+            image_path = "images/SMARTANK.png"
         self.controller = controller
 
         image = Image.open(image_path)
