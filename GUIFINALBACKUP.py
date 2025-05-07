@@ -51,7 +51,11 @@ WARNING = ""
 PHWARNING = ""
 HIGHPH = high_ph[FISHTYPE]
 LOWPH = low_ph[FISHTYPE]
+temp_alert_sent = None
+ph_alert_sent = None
+last_alert_time = 0 
 
+ALERT_INTERVAL = 3600
 
 pageph = voltage_to_ph(get_phvoltage())
 pagetemp_f = get_temp()
@@ -115,44 +119,98 @@ def display_remaining_time():
         return time_remaining
 
 def Warning():
-    global WARNING
+    global WARNING, temp_alert_sent, last_alert_time
     temp = get_temp()
-    if int(temp) > int(HIGHTEMP):
-        message = "TEMP IS TOO HIGH"
+    current_time = time.time()
+
+    def try_send_alert(message):
+        global temp_alert_sent, last_alert_time
         settings = load_settings()
         number = settings.get("phone_number", "")
         provider = settings.get("provider", "")
-        send_sms(message, number, provider)
+        if number and provider:
+            if temp_alert_sent != message or (current_time - last_alert_time) >= ALERT_INTERVAL:
+                send_sms(message, number, provider)
+                temp_alert_sent = message
+                last_alert_time = current_time
+
+    if int(temp) > int(HIGHTEMP):
+        message = "TEMP IS TOO HIGH"
+        try_send_alert(message)
         WARNING = message
     elif int(temp) < int(LOWTEMP):
         message = "TEMP IS TOO LOW"
-        settings = load_settings()
-        number = settings.get("phone_number", "")
-        provider = settings.get("provider", "")
-        send_sms(message, number, provider)
+        try_send_alert(message)
         WARNING = message
     else:
         WARNING = ""
 
 def PHWarning():
-    global PHWARNING
+    global PHWARNING, ph_alert_sent, ph_last_alert_time
     ph = voltage_to_ph(get_phvoltage())
-    if ph > float(HIGHPH):
-        message = "PH IS TOO HIGH"
+    current_time = time.time()
+
+    def try_send_alert(message):
+        global ph_alert_sent, ph_last_alert_time
         settings = load_settings()
         number = settings.get("phone_number", "")
         provider = settings.get("provider", "")
-        send_sms(message, number, provider)
+        if number and provider:
+            if ph_alert_sent != message or (current_time - ph_last_alert_time) >= ALERT_INTERVAL:
+                send_sms(message, number, provider)
+                ph_alert_sent = message
+                ph_last_alert_time = current_time
+
+    if ph > float(HIGHPH):
+        message = "PH IS TOO HIGH"
+        try_send_alert(message)
         PHWARNING = message
     elif ph < float(LOWPH):
         message = "PH IS TOO LOW"
-        settings = load_settings()
-        number = settings.get("phone_number", "")
-        provider = settings.get("provider", "")
-        send_sms(message, number, provider)
+        try_send_alert(message)
         PHWARNING = message
     else:
         PHWARNING = ""
+        
+# def Warning():
+#     global WARNING
+#     temp = get_temp()
+#     if int(temp) > int(HIGHTEMP):
+#         message = "TEMP IS TOO HIGH"
+#         settings = load_settings()
+#         number = settings.get("phone_number", "")
+#         provider = settings.get("provider", "")
+#         send_sms(message, number, provider)
+#         WARNING = message
+#     elif int(temp) < int(LOWTEMP):
+#         message = "TEMP IS TOO LOW"
+#         settings = load_settings()
+#         number = settings.get("phone_number", "")
+#         provider = settings.get("provider", "")
+#         send_sms(message, number, provider)
+#         WARNING = message
+#     else:
+#         WARNING = ""
+
+# def PHWarning():
+#     global PHWARNING
+#     ph = voltage_to_ph(get_phvoltage())
+#     if ph > float(HIGHPH):
+#         message = "PH IS TOO HIGH"
+#         settings = load_settings()
+#         number = settings.get("phone_number", "")
+#         provider = settings.get("provider", "")
+#         send_sms(message, number, provider)
+#         PHWARNING = message
+#     elif ph < float(LOWPH):
+#         message = "PH IS TOO LOW"
+#         settings = load_settings()
+#         number = settings.get("phone_number", "")
+#         provider = settings.get("provider", "")
+#         send_sms(message, number, provider)
+#         PHWARNING = message
+#     else:
+#         PHWARNING = ""
 
 class SmartankGUI(tk.Tk):
     def __init__(self):
