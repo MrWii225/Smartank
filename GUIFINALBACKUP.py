@@ -88,7 +88,7 @@ def send_sms(message, number, provider):
 
     try:
         with smtplib.SMTP("smtp.gmail.com", 587) as smtp:
-            smtp.starttls()
+            smtp.starttls() 
             smtp.login("smartank100@gmail.com", "cnae ccjt hyat qfti")  # use environment variables in production
             smtp.send_message(msg)
             print("SMS sent successfully.")
