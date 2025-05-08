@@ -118,16 +118,15 @@ def display_remaining_time():
         time_remaining = "Autofeeder disabled"
         return time_remaining
 
-def Warning():
+def Warning(temp):
     global WARNING, temp_alert_sent, last_alert_time
-    temp = get_temp()
     current_time = time.time()
+    settings = load_settings()
+    number = settings.get("phone_number", "")
+    provider = settings.get("provider", "")
 
     def try_send_alert(message):
         global temp_alert_sent, last_alert_time
-        settings = load_settings()
-        number = settings.get("phone_number", "")
-        provider = settings.get("provider", "")
         if number and provider:
             if temp_alert_sent != message or (current_time - last_alert_time) >= ALERT_INTERVAL:
                 send_sms(message, number, provider)
@@ -145,16 +144,17 @@ def Warning():
     else:
         WARNING = ""
 
-def PHWarning():
+def PHWarning(ph):
     global PHWARNING, ph_alert_sent, ph_last_alert_time
-    ph = voltage_to_ph(get_phvoltage())
+
     current_time = time.time()
+    settings = load_settings()
+
+    number = settings.get("phone_number", "")
+    provider = settings.get("provider", "")
 
     def try_send_alert(message):
         global ph_alert_sent, ph_last_alert_time
-        settings = load_settings()
-        number = settings.get("phone_number", "")
-        provider = settings.get("provider", "")
         if number and provider:
             if ph_alert_sent != message or (current_time - ph_last_alert_time) >= ALERT_INTERVAL:
                 send_sms(message, number, provider)
@@ -171,6 +171,7 @@ def PHWarning():
         PHWARNING = message
     else:
         PHWARNING = ""
+
 
 # def Warning():
 #     global WARNING
@@ -257,7 +258,7 @@ class SmartankGUI(tk.Tk):
     def run_schedule_loop(self):
         while True:
             schedule.run_pending()
-            time.sleep(1)
+            time.sleep(5)
 
     def apply_theme(self, theme):
         if theme == "dark":
@@ -403,15 +404,14 @@ class InitialPage(ttk.Frame):
         self.lbl.config(font=(font_name, font_size))
     
     def update_sensor_readings(self):
-        pageph = voltage_to_ph(get_phvoltage())
+        ph_voltage = get_phvoltage()
+        pageph = voltage_to_ph(ph_voltage)
         pagetemp_f = get_temp()
-        Warning()
-        PHWarning()
+        Warning(pagetemp_f)
+        PHWarning(pageph)
         self.ph_label.config(text=f"{pageph:.2f} pH {PHWARNING}")
         self.temp_label.config(text=f"{pagetemp_f:.2f} °F {WARNING}")
-
-        self.after(3000, self.update_sensor_readings) #updates sensor readings after 3 seconds
-
+        self.after(3000, self.update_sensor_readings)
     def update_timer(self):
         remaining = display_remaining_time()
         self.timer_label.config(text=f"Autofeeder timer: {remaining}")
