@@ -62,6 +62,7 @@ pagetemp_f = get_temp()
 
 
 def load_settings():
+    print("loading settings")
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, 'r') as file:
             return json.load(file)
@@ -75,9 +76,11 @@ def load_settings():
         "message": "",
         "Fish_type": ""
     }
+    
 
 def save_settings(settings):
     with open(CONFIG_FILE, 'w') as file:
+        print("saving settings")
         json.dump(settings, file)
         print("settings saved")
 import smtplib
@@ -124,6 +127,7 @@ def display_remaining_time():
 
 
 def Warning(temp):
+    print("Running Warning")
     global WARNING, temp_alert_sent, last_alert_time
     current_time = time.time()
     settings = load_settings()
@@ -151,6 +155,7 @@ def Warning(temp):
     print("Warning Ran")
 
 def PHWarning(ph):
+    print("Running PHWarning")
     global PHWARNING, ph_alert_sent, ph_last_alert_time
 
     current_time = time.time()
@@ -223,6 +228,7 @@ def PHWarning(ph):
 
 class SmartankGUI(tk.Tk):
     def __init__(self):
+        print("Initializing SmartankGUI")
         super().__init__()
         self.title("Smartank")
         self.attributes("-fullscreen", True)
@@ -283,6 +289,7 @@ class SmartankGUI(tk.Tk):
         print("frame shown")
 
     def apply_dark_theme(self):
+        print("applying dark theme")
         self.style.configure("TFrame", background="#2E2E2E")
         self.style.configure("TLabel", background="#2E2E2E", foreground="#FFFFFF")
         self.style.configure("TButton", background="#505050", foreground="#F2F2F2")
@@ -291,6 +298,7 @@ class SmartankGUI(tk.Tk):
         print("dark theme applied")
 
     def apply_light_theme(self):
+        print("applying light theme")
         self.style.configure("TFrame", background="#F9F9F9")
         self.style.configure("TLabel", background="#F9F9F9", foreground="#000000")
         self.style.configure("TButton", background="#E0E0E0", foreground="#000000")
@@ -299,6 +307,7 @@ class SmartankGUI(tk.Tk):
         print("light theme applied")
 
     def toggle_theme(self):
+        print("toggling theme")
         self._current_theme = "dark" if self._current_theme == "light" else "light"
         self.settings["theme"] = self._current_theme
         save_settings(self.settings)
@@ -306,6 +315,7 @@ class SmartankGUI(tk.Tk):
         print("theme toggled")
 
     def set_font(self, font_name):
+        print("setting font")
         self.current_font = font_name
         self.settings["font"] = font_name
 
@@ -318,6 +328,7 @@ class SmartankGUI(tk.Tk):
         print("font set")
 
     def set_font_size(self, font_size):
+        print("setting font size")
         if font_size == "Small":
             self.current_font_size = SMALL_FONT_SIZE
         elif font_size == "Large":
@@ -339,6 +350,7 @@ class SmartankGUI(tk.Tk):
 
 class WelcomePage(ttk.Frame):
     def __init__(self, parent, controller):
+        print("initializing WelcomePage")
         super().__init__(parent)
         self.controller = controller
 
@@ -357,6 +369,7 @@ class WelcomePage(ttk.Frame):
         print("WelcomePage initialized")
 
     def save_info(self):
+        print("saving info")
         phone = self.phone_entry.get().strip()
         if self.provider_var.get().strip() == "AT&T":
             provider = "txt.att.net"
@@ -380,6 +393,7 @@ class WelcomePage(ttk.Frame):
 
 class InitialPage(ttk.Frame):
     def __init__(self, parent, controller):
+        print("initializing InitialPage")
         super().__init__(parent)
         # if SmartankGUI._current_theme == "dark":
         #     image_path = "images/SMARTANKDark.png"
@@ -420,10 +434,12 @@ class InitialPage(ttk.Frame):
         time()
 
     def update_clock_font(self, font_name, font_size):
+        print("Updating clock font")
         self.lbl.config(font=(font_name, font_size))
         print("clock font updated")
     
     def update_sensor_readings(self):
+        print("Updating sensor readings")
         ph_voltage = get_phvoltage()
         pageph = voltage_to_ph(ph_voltage)
         pagetemp_f = get_temp()
@@ -434,6 +450,7 @@ class InitialPage(ttk.Frame):
         print("sensor readings updated")
         self.after(3000, self.update_sensor_readings)
     def update_timer(self):
+        print("updating timer")
         remaining = display_remaining_time()
         self.timer_label.config(text=f"Autofeeder timer: {remaining}")
         self.timer_label.after(1000, self.update_timer)
@@ -444,6 +461,7 @@ class InitialPage(ttk.Frame):
 
 class Options(ttk.Frame):
     def __init__(self, parent, controller):
+        print("Initializing Options")
         super().__init__(parent)
         ttk.Button(self, text="Go Back", width=10, command=lambda: controller.show_frame("InitialPage")).pack(pady=8)
         ttk.Button(self, text="Display", width=30, command=lambda: controller.show_frame("Display")).pack(pady=8)
@@ -455,6 +473,7 @@ class Options(ttk.Frame):
 
 class Autofeeder(ttk.Frame):
     def __init__(self, parent, controller):
+        print("initializing Autofeeder")
         super().__init__(parent)
         self.controller = controller
 
@@ -495,6 +514,7 @@ class Autofeeder(ttk.Frame):
 
 class Display(ttk.Frame):
     def __init__(self, parent, controller):
+        print("Initializing Display")
         super().__init__(parent)
         ttk.Button(self, text="Go Back", command=lambda: controller.show_frame("Options")).pack(pady=6)
 
@@ -517,6 +537,7 @@ class Display(ttk.Frame):
 
 class FishParams(ttk.Frame):
     def __init__(self, parent, controller):
+        print("Initializing FishParams")
         super().__init__(parent)
         self.controller = controller
         self.fish_type_var = tk.StringVar()
@@ -537,6 +558,7 @@ class FishParams(ttk.Frame):
 
 class Notifications(ttk.Frame):
     def __init__(self, parent, controller):
+        print("Initializing Notifications")
         super().__init__(parent)
         self.controller = controller
         ttk.Label(self, text="Enter Your Phone Number").pack(pady=10)
@@ -580,6 +602,7 @@ class Notifications(ttk.Frame):
 
 class Fishionary(ttk.Frame):
     def __init__(self, parent, controller):
+        print("Initializing Fishionary")
         super().__init__(parent)
         for i in range(5):
             self.grid_columnconfigure(i, weight=1)
@@ -605,11 +628,13 @@ class Fishionary(ttk.Frame):
             ttk.Button(self, text=label, command=lambda page=page: controller.show_frame(page), width=20).grid(row=r, column=c, padx=10, pady=10)
 
         ttk.Button(self, text="Go Back", command=lambda: controller.show_frame("InitialPage")).grid(row=5, column=2, pady=20)
+        print("Fishionary Initialized")
 
 
 
 class InfoPage(ttk.Frame):
     def __init__(self, parent, controller, fish_name):
+        print("Initializing InfoPage")
         super().__init__(parent)
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
@@ -624,6 +649,7 @@ class InfoPage(ttk.Frame):
 
         ttk.Label(self, text=data, wraplength=800, justify="center").grid(row=2, column=0, columnspan=2, padx=20, pady=20)
         ttk.Button(self, text="Go Back", command=lambda: controller.show_frame("Fishionary")).grid(row=3, column=0, columnspan=2, pady=10)
+        print("InfoPage Initialized")
 
 
 
