@@ -59,7 +59,7 @@ ALERT_INTERVAL = 3600
 
 pageph = voltage_to_ph(get_phvoltage())
 pagetemp_f = get_temp()
-
+THEME = ""
 
 def load_settings():
     print("loading settings")
@@ -237,10 +237,10 @@ class SmartankGUI(tk.Tk):
         self.style.theme_use("clam")
 
         self.settings = load_settings()
-        self._current_theme = self.settings["theme"]
+        self.current_theme = self.settings["theme"]
         self.current_font = self.settings["font"]
         self.current_font_size = self.settings["font_size"]
-        self.apply_theme(self._current_theme)
+        self.apply_theme(self.current_theme)
 
         self.style.configure("TButton", font=(self.current_font, self.current_font_size), padding=6)
         self.style.configure("TLabel", font=(self.current_font, self.current_font_size))
@@ -296,6 +296,8 @@ class SmartankGUI(tk.Tk):
         self.style.map("TButton", background=[('active', '#505050')])
         self.style.configure("TCombobox", fieldbackground="#3E3E3E", background="#2E2E2E", foreground="#000000")
         print("dark theme applied")
+        global THEME
+        THEME = "dark"
 
     def apply_light_theme(self):
         print("applying light theme")
@@ -305,13 +307,17 @@ class SmartankGUI(tk.Tk):
         self.style.map("TButton", background=[('active', '#D0D0D0')])
         self.style.configure("TCombobox", fieldbackground="#FFFFFF", background="#FFFFFF", foreground="#000000")
         print("light theme applied")
+        global THEME 
+        THEME = "light"
+
+    
 
     def toggle_theme(self):
         print("toggling theme")
-        self._current_theme = "dark" if self._current_theme == "light" else "light"
-        self.settings["theme"] = self._current_theme
+        self.current_theme = "dark" if self.current_theme == "light" else "light"
+        self.settings["theme"] = self.current_theme
         save_settings(self.settings)
-        self.apply_theme(self._current_theme)
+        self.apply_theme(self.current_theme)
         print("theme toggled")
 
     def set_font(self, font_name):
@@ -395,11 +401,11 @@ class InitialPage(ttk.Frame):
     def __init__(self, parent, controller):
         print("initializing InitialPage")
         super().__init__(parent)
-        # if SmartankGUI._current_theme == "dark":
-        #     image_path = "images/SMARTANKDark.png"
-        # else:
-        #     image_path = "images/SMARTANK.png"
-        image_path = "images/SMARTANK.png"
+        if THEME == "dark":
+            image_path = "images/SMARTANKDark.png"
+        elif THEME == "light":
+            image_path = "images/SMARTANK.png"
+        # image_path = "images/SMARTANK.png"
         self.controller = controller
 
         image = Image.open(image_path)
@@ -448,7 +454,7 @@ class InitialPage(ttk.Frame):
         self.ph_label.config(text=f"{pageph:.2f} pH {PHWARNING}")
         self.temp_label.config(text=f"{pagetemp_f:.2f} °F {WARNING}")
         print("sensor readings updated")
-        self.after(3000, self.update_sensor_readings)
+        self.after(10000, self.update_sensor_readings)
     def update_timer(self):
         print("updating timer")
         remaining = display_remaining_time()
