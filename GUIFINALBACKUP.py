@@ -33,7 +33,7 @@ def feed():
 	GPIO.output(BACK, GPIO.LOW)
 	sleep(3)
 	GPIO.output(BACK, GPIO.HIGH)
-	
+	print("feed func ran")
 
 
 AVAILABLE_FONTS = ["Arial", "Georgia", "Times", "Helvetica", "Courier"]
@@ -57,12 +57,12 @@ last_alert_time = 0
 
 ALERT_INTERVAL = 3600
 
-
 pageph = voltage_to_ph(get_phvoltage())
 pagetemp_f = get_temp()
-
+THEME = ""
 
 def load_settings():
+    print("loading settings")
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, 'r') as file:
             return json.load(file)
@@ -76,10 +76,13 @@ def load_settings():
         "message": "",
         "Fish_type": ""
     }
+    
 
 def save_settings(settings):
     with open(CONFIG_FILE, 'w') as file:
+        print("saving settings")
         json.dump(settings, file)
+        print("settings saved")
 import smtplib
 from email.message import EmailMessage
 
@@ -93,7 +96,7 @@ def send_sms(message, number, provider):
 
     try:
         with smtplib.SMTP("smtp.gmail.com", 587) as smtp:
-            smtp.starttls()
+            smtp.starttls() 
             smtp.login("smartank100@gmail.com", "cnae ccjt hyat qfti")  # use environment variables in production
             smtp.send_message(msg)
             print("SMS sent successfully.")
@@ -109,26 +112,30 @@ def autofeeder():
     provider = settings.get("provider", "")
     if number and provider:
         send_sms(message, number, provider)
+    print("autofeeder func ran")
 
 def display_remaining_time():
     next_run = schedule.next_run()
     if next_run:
         time_remaining = next_run - datetime.now()
+        print("display remainging time ran")
         return str(time_remaining).split(".")[0]
     else:
-        return "Autofeeder disabled"
+        time_remaining = "Autofeeder disabled"
+        print("display remainging time ran")
+        return time_remaining
 
 
-def Warning():
+def Warning(temp):
+    print("Running Warning")
     global WARNING, temp_alert_sent, last_alert_time
-    temp = get_temp()
     current_time = time.time()
+    settings = load_settings()
+    number = settings.get("phone_number", "")
+    provider = settings.get("provider", "")
 
     def try_send_alert(message):
         global temp_alert_sent, last_alert_time
-        settings = load_settings()
-        number = settings.get("phone_number", "")
-        provider = settings.get("provider", "")
         if number and provider:
             if temp_alert_sent != message or (current_time - last_alert_time) >= ALERT_INTERVAL:
                 send_sms(message, number, provider)
@@ -145,22 +152,26 @@ def Warning():
         WARNING = message
     else:
         WARNING = ""
+    print("Warning Ran")
 
-def PHWarning():
+def PHWarning(ph):
+    print("Running PHWarning")
     global PHWARNING, ph_alert_sent, ph_last_alert_time
-    ph = voltage_to_ph(get_phvoltage())
+
     current_time = time.time()
+    settings = load_settings()
+
+    number = settings.get("phone_number", "")
+    provider = settings.get("provider", "")
 
     def try_send_alert(message):
         global ph_alert_sent, ph_last_alert_time
-        settings = load_settings()
-        number = settings.get("phone_number", "")
-        provider = settings.get("provider", "")
         if number and provider:
             if ph_alert_sent != message or (current_time - ph_last_alert_time) >= ALERT_INTERVAL:
                 send_sms(message, number, provider)
                 ph_alert_sent = message
                 ph_last_alert_time = current_time
+        print("try send alert ran")
 
     if ph > float(HIGHPH):
         message = "PH IS TOO HIGH"
@@ -172,9 +183,52 @@ def PHWarning():
         PHWARNING = message
     else:
         PHWARNING = ""
+    print("PHWarning ran")
+
+
+# def Warning():
+#     global WARNING
+#     temp = get_temp()
+#     if int(temp) > int(HIGHTEMP):
+#         message = "TEMP IS TOO HIGH"
+#         settings = load_settings()
+#         number = settings.get("phone_number", "")
+#         provider = settings.get("provider", "")
+#         send_sms(message, number, provider)
+#         WARNING = message
+#     elif int(temp) < int(LOWTEMP):
+#         message = "TEMP IS TOO LOW"
+#         settings = load_settings()
+#         number = settings.get("phone_number", "")
+#         provider = settings.get("provider", "")
+#         send_sms(message, number, provider)
+#         WARNING = message
+#     else:
+#         WARNING = ""
+
+# def PHWarning():
+#     global PHWARNING
+#     ph = voltage_to_ph(get_phvoltage())
+#     if ph > float(HIGHPH):
+#         message = "PH IS TOO HIGH"
+#         settings = load_settings()
+#         number = settings.get("phone_number", "")
+#         provider = settings.get("provider", "")
+#         send_sms(message, number, provider)
+#         PHWARNING = message
+#     elif ph < float(LOWPH):
+#         message = "PH IS TOO LOW"
+#         settings = load_settings()
+#         number = settings.get("phone_number", "")
+#         provider = settings.get("provider", "")
+#         send_sms(message, number, provider)
+#         PHWARNING = message
+#     else:
+#         PHWARNING = ""
 
 class SmartankGUI(tk.Tk):
     def __init__(self):
+        print("Initializing SmartankGUI")
         super().__init__()
         self.title("Smartank")
         self.attributes("-fullscreen", True)
@@ -183,10 +237,10 @@ class SmartankGUI(tk.Tk):
         self.style.theme_use("clam")
 
         self.settings = load_settings()
-        self._current_theme = self.settings["theme"]
+        self.current_theme = self.settings["theme"]
         self.current_font = self.settings["font"]
         self.current_font_size = self.settings["font_size"]
-        self.apply_theme(self._current_theme)
+        self.apply_theme(self.current_theme)
 
         self.style.configure("TButton", font=(self.current_font, self.current_font_size), padding=6)
         self.style.configure("TLabel", font=(self.current_font, self.current_font_size))
@@ -214,43 +268,60 @@ class SmartankGUI(tk.Tk):
         else:
             self.show_frame("InitialPage")
         threading.Thread(target=self.run_schedule_loop, daemon=True).start()
-    
+        print("SmartankGUI initialized")
+        
     def run_schedule_loop(self):
+        print("schedule loop ran")
         while True:
             schedule.run_pending()
-            time.sleep(1)
+            time.sleep(5)
 
     def apply_theme(self, theme):
         if theme == "dark":
             self.apply_dark_theme()
         else:
             self.apply_light_theme()
+        print("theme applied")
 
     def show_frame(self, page_name):
         frame = self.frames[page_name]
         frame.tkraise() 
+        print("frame shown")
 
     def apply_dark_theme(self):
+        print("applying dark theme")
         self.style.configure("TFrame", background="#2E2E2E")
         self.style.configure("TLabel", background="#2E2E2E", foreground="#FFFFFF")
         self.style.configure("TButton", background="#505050", foreground="#F2F2F2")
         self.style.map("TButton", background=[('active', '#505050')])
         self.style.configure("TCombobox", fieldbackground="#3E3E3E", background="#2E2E2E", foreground="#000000")
+        print("dark theme applied")
+        global THEME
+        THEME = "dark"
 
     def apply_light_theme(self):
+        print("applying light theme")
         self.style.configure("TFrame", background="#F9F9F9")
         self.style.configure("TLabel", background="#F9F9F9", foreground="#000000")
         self.style.configure("TButton", background="#E0E0E0", foreground="#000000")
         self.style.map("TButton", background=[('active', '#D0D0D0')])
         self.style.configure("TCombobox", fieldbackground="#FFFFFF", background="#FFFFFF", foreground="#000000")
+        print("light theme applied")
+        global THEME 
+        THEME = "light"
+
+    
 
     def toggle_theme(self):
-        self._current_theme = "dark" if self._current_theme == "light" else "light"
-        self.settings["theme"] = self._current_theme
+        print("toggling theme")
+        self.current_theme = "dark" if self.current_theme == "light" else "light"
+        self.settings["theme"] = self.current_theme
         save_settings(self.settings)
-        self.apply_theme(self._current_theme)
+        self.apply_theme(self.current_theme)
+        print("theme toggled")
 
     def set_font(self, font_name):
+        print("setting font")
         self.current_font = font_name
         self.settings["font"] = font_name
 
@@ -260,8 +331,10 @@ class SmartankGUI(tk.Tk):
         self.style.configure("TCombobox", font=(self.current_font, self.current_font_size))
 
         save_settings(self.settings)
+        print("font set")
 
     def set_font_size(self, font_size):
+        print("setting font size")
         if font_size == "Small":
             self.current_font_size = SMALL_FONT_SIZE
         elif font_size == "Large":
@@ -278,10 +351,12 @@ class SmartankGUI(tk.Tk):
         self.frames["InitialPage"].update_clock_font(self.current_font, self.current_font_size)
 
         save_settings(self.settings)
+        print("Font size set")
 
 
 class WelcomePage(ttk.Frame):
     def __init__(self, parent, controller):
+        print("initializing WelcomePage")
         super().__init__(parent)
         self.controller = controller
 
@@ -297,8 +372,10 @@ class WelcomePage(ttk.Frame):
         provider_menu.pack(pady=5)
 
         ttk.Button(self, text="Save and Continue", command=self.save_info).pack(pady=20)
+        print("WelcomePage initialized")
 
     def save_info(self):
+        print("saving info")
         phone = self.phone_entry.get().strip()
         if self.provider_var.get().strip() == "AT&T":
             provider = "txt.att.net"
@@ -318,12 +395,17 @@ class WelcomePage(ttk.Frame):
             self.controller.show_frame("InitialPage")
         else:
             tk.messagebox.showerror("Error", "Please fill in all fields.")
-
+        print("info saved")
 
 class InitialPage(ttk.Frame):
     def __init__(self, parent, controller):
+        print("initializing InitialPage")
         super().__init__(parent)
-        image_path = "images/SMARTANK.png"
+        if THEME == "dark":
+            image_path = "images/SMARTANKDark.png"
+        elif THEME == "light":
+            image_path = "images/SMARTANK.png"
+        # image_path = "images/SMARTANK.png"
         self.controller = controller
 
         image = Image.open(image_path)
@@ -346,7 +428,8 @@ class InitialPage(ttk.Frame):
 
         ttk.Button(self, text="Fishionary", width=30, command=lambda: controller.show_frame("Fishionary")).pack(pady=5)
         ttk.Button(self, text="Options", width=30, command=lambda: controller.show_frame("Options")).pack(pady=5)
-
+        print("InitialPage initialized")
+        
         def time():
             string = strftime('%I:%M:%S %p')
             self.lbl.config(text=string)
@@ -357,38 +440,46 @@ class InitialPage(ttk.Frame):
         time()
 
     def update_clock_font(self, font_name, font_size):
+        print("Updating clock font")
         self.lbl.config(font=(font_name, font_size))
+        print("clock font updated")
     
     def update_sensor_readings(self):
-        pageph = voltage_to_ph(get_phvoltage())
+        print("Updating sensor readings")
+        ph_voltage = get_phvoltage()
+        pageph = voltage_to_ph(ph_voltage)
         pagetemp_f = get_temp()
-        schedule.every(10).seconds.do(Warning).tag("sensor")
-        schedule.every(10).seconds.do(PHWarning).tag("sensor")
+        Warning(pagetemp_f)
+        PHWarning(pageph)
         self.ph_label.config(text=f"{pageph:.2f} pH {PHWARNING}")
         self.temp_label.config(text=f"{pagetemp_f:.2f} °F {WARNING}")
-
-        self.after(5000, self.update_sensor_readings) #updates sensor readings after 5 seconds
-
+        print("sensor readings updated")
+        self.after(10000, self.update_sensor_readings)
     def update_timer(self):
+        print("updating timer")
         remaining = display_remaining_time()
         self.timer_label.config(text=f"Autofeeder timer: {remaining}")
         self.timer_label.after(1000, self.update_timer)
+        print("timer updated")
 
 
 
 
 class Options(ttk.Frame):
     def __init__(self, parent, controller):
+        print("Initializing Options")
         super().__init__(parent)
         ttk.Button(self, text="Go Back", width=10, command=lambda: controller.show_frame("InitialPage")).pack(pady=8)
         ttk.Button(self, text="Display", width=30, command=lambda: controller.show_frame("Display")).pack(pady=8)
         ttk.Button(self, text="Autofeeder", width=30, command=lambda: controller.show_frame("Autofeeder")).pack(pady=8)
         ttk.Button(self, text="Fish Parameters", width=30, command=lambda: controller.show_frame("FishParams")).pack(pady=8)
         ttk.Button(self, text="Notifications", width=30, command=lambda: controller.show_frame("Notifications")).pack(pady=8)
+        print("Options initialized")
 
 
 class Autofeeder(ttk.Frame):
     def __init__(self, parent, controller):
+        print("initializing Autofeeder")
         super().__init__(parent)
         self.controller = controller
 
@@ -401,6 +492,7 @@ class Autofeeder(ttk.Frame):
 
         ttk.Button(self, text="Start Feeding", command=self.feed_now).pack(pady=10)
         ttk.Button(self, text="Go Back", command=lambda: controller.show_frame("Options")).pack(pady=10)
+        print("Autofeeder initialized")
 
     # Both functions unfinished
     def feed_now(self):
@@ -409,14 +501,15 @@ class Autofeeder(ttk.Frame):
         freq = int(self.feed_var.get())
         self.controller.settings["feeding_frequency"] = freq
         save_settings(self.controller.settings)
-        schedule.clear("autofeeder")
-
+        schedule.clear()
+        print("Feeding now")
         if freq == 1:
-            schedule.every(24).hours.do(autofeeder).tag("autofeeder")
-        elif freq == 2:
-            schedule.every(12).hours.do(autofeeder).tag("autofeeder")
-        elif freq == 3:
-            schedule.every(8).hours.do(autofeeder).tag("autofeeder")
+            schedule.every(24).hours.do(autofeeder)
+        if freq == 2:
+            schedule.every(12).hours.do(autofeeder)
+        if freq == 3:
+            schedule.every(8).hours.do(autofeeder)
+    
 
     # while True:
     #     schedule.run_pending()
@@ -427,10 +520,11 @@ class Autofeeder(ttk.Frame):
 
 class Display(ttk.Frame):
     def __init__(self, parent, controller):
+        print("Initializing Display")
         super().__init__(parent)
         ttk.Button(self, text="Go Back", command=lambda: controller.show_frame("Options")).pack(pady=6)
 
-        ttk.Button(self, text="Switch Theme", command=controller.apply_theme).pack(pady=6)
+        ttk.Button(self, text="Switch Theme", command=controller.toggle_theme).pack(pady=6)
 
         ttk.Label(self, text="Change Font:").pack(pady=6)
         font_choice = ttk.Combobox(self, values=AVAILABLE_FONTS, state="readonly")
@@ -443,11 +537,13 @@ class Display(ttk.Frame):
         font_size_choice.set("Small" if controller.current_font_size == SMALL_FONT_SIZE else "Large" if controller.current_font_size == LARGE_FONT_SIZE else "Medium")
         font_size_choice.pack(pady=6)
         font_size_choice.bind("<<ComboboxSelected>>", lambda e: controller.set_font_size(font_size_choice.get()))
+        print("Display initialized")
 
 
 
 class FishParams(ttk.Frame):
     def __init__(self, parent, controller):
+        print("Initializing FishParams")
         super().__init__(parent)
         self.controller = controller
         self.fish_type_var = tk.StringVar()
@@ -457,15 +553,18 @@ class FishParams(ttk.Frame):
         ttk.Entry(self)
         ttk.Button(self, text="Confirm", command= self.save_fish).pack(pady=10)
         ttk.Button(self, text="Go Back", command=lambda: controller.show_frame("Options")).pack(pady=20)
+        print("FishParams initialized")
 
     def save_fish(self):
         fish_type = self.fish_type_var.get()
         if fish_type:
             self.controller.settings["Fish_type"] = fish_type
             save_settings(self.controller.settings)
+            print("save fish")
 
 class Notifications(ttk.Frame):
     def __init__(self, parent, controller):
+        print("Initializing Notifications")
         super().__init__(parent)
         self.controller = controller
         ttk.Label(self, text="Enter Your Phone Number").pack(pady=10)
@@ -480,10 +579,12 @@ class Notifications(ttk.Frame):
 
         ttk.Button(self, text="Update", command=self.save_info).pack(pady=20)
         ttk.Button(self, text="Go Back", command=lambda: controller.show_frame("Options")).pack(pady=20)
+        print("Notifications initialized")
 
 
     def save_info(self):
         phone = self.phone_entry.get().strip()
+        print("saved info")
         if self.provider_var.get().strip() == "AT&T":
             provider = "txt.att.net"
         elif self.provider_var.get().strip() == "Verizon":
@@ -507,6 +608,7 @@ class Notifications(ttk.Frame):
 
 class Fishionary(ttk.Frame):
     def __init__(self, parent, controller):
+        print("Initializing Fishionary")
         super().__init__(parent)
         for i in range(5):
             self.grid_columnconfigure(i, weight=1)
@@ -532,11 +634,13 @@ class Fishionary(ttk.Frame):
             ttk.Button(self, text=label, command=lambda page=page: controller.show_frame(page), width=20).grid(row=r, column=c, padx=10, pady=10)
 
         ttk.Button(self, text="Go Back", command=lambda: controller.show_frame("InitialPage")).grid(row=5, column=2, pady=20)
+        print("Fishionary Initialized")
 
 
 
 class InfoPage(ttk.Frame):
     def __init__(self, parent, controller, fish_name):
+        print("Initializing InfoPage")
         super().__init__(parent)
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
@@ -551,6 +655,7 @@ class InfoPage(ttk.Frame):
 
         ttk.Label(self, text=data, wraplength=800, justify="center").grid(row=2, column=0, columnspan=2, padx=20, pady=20)
         ttk.Button(self, text="Go Back", command=lambda: controller.show_frame("Fishionary")).grid(row=3, column=0, columnspan=2, pady=10)
+        print("InfoPage Initialized")
 
 
 
