@@ -27,6 +27,7 @@ def voltage_to_ph(voltage):
     ph = (7.78 * voltage - 8.54)
     return round(ph, 2)
 
+
 def get_phvoltage():
     return ph_channel.voltage 
 
@@ -43,6 +44,7 @@ if __name__ == "__main__":
         print(voltage_to_ph(voltage))
         print(f"Raw ADC Value: {raw_value}, Voltage: {voltage:.3f} V")
         time.sleep(1)
+
 
 
 
